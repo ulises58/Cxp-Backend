@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['tenant_id', 'site_id', 'name', 'slug', 'description', 'metadata', 'is_active'])]
+#[Fillable(['tenant_id', 'site_id', 'name', 'description', 'metadata', 'is_active'])]
 class Location extends Model
 {
     protected function casts(): array

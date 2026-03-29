@@ -40,7 +40,6 @@ class TenantLocationController extends Controller
         $location = $locations->create(
             $tenantSite,
             $validated['name'],
-            $validated['slug'],
             $validated['description'] ?? null,
             $validated['metadata'] ?? null,
             (bool) ($validated['is_active'] ?? true),
@@ -73,7 +72,6 @@ class TenantLocationController extends Controller
         $location = $locations->update(
             $tenantLocation,
             $validated['name'] ?? $tenantLocation->name,
-            $validated['slug'] ?? $tenantLocation->slug,
             $description,
             $metadata,
             array_key_exists('is_active', $validated)

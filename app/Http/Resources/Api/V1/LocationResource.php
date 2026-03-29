@@ -23,7 +23,6 @@ class LocationResource extends JsonResource
             'tenant_id' => $this->tenant_id,
             'site_id' => $this->site_id,
             'name' => $this->name,
-            'slug' => $this->slug,
             'description' => $this->description,
             'metadata' => $this->metadata,
             'is_active' => (bool) $this->is_active,

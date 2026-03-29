@@ -46,7 +46,6 @@ class LocalDemoSeeder extends Seeder
             $site = Site::query()->create([
                 'tenant_id' => $tenant->id,
                 'name' => 'Sitio principal',
-                'slug' => 'main',
                 'description' => null,
                 'is_active' => true,
             ]);
@@ -54,7 +53,6 @@ class LocalDemoSeeder extends Seeder
                 'tenant_id' => $tenant->id,
                 'site_id' => $site->id,
                 'name' => 'Ubicación por defecto',
-                'slug' => 'default',
                 'description' => null,
                 'metadata' => null,
                 'is_active' => true,

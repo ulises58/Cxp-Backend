@@ -24,7 +24,6 @@ final class TenantLocationService
     public function create(
         Site $site,
         string $name,
-        string $slug,
         ?string $description,
         ?array $metadata,
         bool $isActive,
@@ -35,7 +34,6 @@ final class TenantLocationService
             'tenant_id' => $this->tenantId(),
             'site_id' => $site->id,
             'name' => $name,
-            'slug' => $slug,
             'description' => $description,
             'metadata' => $metadata,
             'is_active' => $isActive,
@@ -45,7 +43,6 @@ final class TenantLocationService
     public function update(
         Location $location,
         string $name,
-        string $slug,
         ?string $description,
         ?array $metadata,
         bool $isActive,
@@ -53,7 +50,6 @@ final class TenantLocationService
         $this->assertSameTenant($location);
 
         $location->name = $name;
-        $location->slug = $slug;
         $location->description = $description;
         $location->metadata = $metadata;
         $location->is_active = $isActive;

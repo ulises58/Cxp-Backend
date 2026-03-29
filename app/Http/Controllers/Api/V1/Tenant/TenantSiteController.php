@@ -38,7 +38,6 @@ class TenantSiteController extends Controller
         $validated = $request->validated();
         $site = $sites->create(
             $validated['name'],
-            $validated['slug'],
             $validated['description'] ?? null,
             (bool) ($validated['is_active'] ?? true),
         );
@@ -63,7 +62,6 @@ class TenantSiteController extends Controller
         $site = $sites->update(
             $tenantSite,
             $validated['name'] ?? $tenantSite->name,
-            $validated['slug'] ?? $tenantSite->slug,
             $description,
             array_key_exists('is_active', $validated)
                 ? (bool) $validated['is_active']

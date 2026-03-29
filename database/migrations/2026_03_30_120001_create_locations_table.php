@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('tenant_id');
             $table->foreignId('site_id')->constrained('sites')->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug');
             $table->text('description')->nullable();
             $table->json('metadata')->nullable();
             $table->boolean('is_active')->default(true);
@@ -26,7 +25,6 @@ return new class extends Migration
                 ->on('tenants')
                 ->cascadeOnDelete();
 
-            $table->unique(['site_id', 'slug']);
             $table->index(['tenant_id', 'site_id']);
         });
     }

@@ -17,23 +17,21 @@ final class TenantSiteService
             ->paginate($perPage);
     }
 
-    public function create(string $name, string $slug, ?string $description, bool $isActive): Site
+    public function create(string $name, ?string $description, bool $isActive): Site
     {
         return Site::query()->create([
             'tenant_id' => $this->tenantId(),
             'name' => $name,
-            'slug' => $slug,
             'description' => $description,
             'is_active' => $isActive,
         ]);
     }
 
-    public function update(Site $site, string $name, string $slug, ?string $description, bool $isActive): Site
+    public function update(Site $site, string $name, ?string $description, bool $isActive): Site
     {
         $this->assertSameTenant($site);
 
         $site->name = $name;
-        $site->slug = $slug;
         $site->description = $description;
         $site->is_active = $isActive;
         $site->save();

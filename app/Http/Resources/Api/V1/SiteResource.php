@@ -22,7 +22,6 @@ class SiteResource extends JsonResource
             'id' => $this->id,
             'tenant_id' => $this->tenant_id,
             'name' => $this->name,
-            'slug' => $this->slug,
             'description' => $this->description,
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->toIso8601String(),
