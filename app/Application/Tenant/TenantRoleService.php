@@ -14,10 +14,9 @@ use Spatie\Permission\PermissionRegistrar;
 final class TenantRoleService
 {
     public const BUILTIN_NAMES = [
-        'tenant_owner',
-        'tenant_support',
-        'tenant_admin',
-        'tenant_user',
+        'owner',
+        'admin',
+        'user',
     ];
 
     /**

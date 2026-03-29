@@ -17,5 +17,5 @@ return [
     'tenant_role_name_format' => 'Usa minúsculas, números, guiones bajos o medios (máx. 64 caracteres).',
     'tenant_role_name_taken' => 'Ya existe un rol con este nombre en tu organización.',
     'tenant_roles_unknown_or_foreign' => 'Uno o más roles no son válidos para esta organización.',
-    'tenant_user_roles_required' => 'Asigna al menos un rol.',
+    'roles_required' => 'Asigna al menos un rol.',
 ];

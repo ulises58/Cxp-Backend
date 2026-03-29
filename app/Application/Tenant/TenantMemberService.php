@@ -48,7 +48,7 @@ final class TenantMemberService
 
         if ($roleNames === []) {
             throw ValidationException::withMessages([
-                'roles' => [__('api.tenant_user_roles_required')],
+                'roles' => [__('api.roles_required')],
             ]);
         }
 

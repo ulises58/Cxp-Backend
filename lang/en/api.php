@@ -17,5 +17,5 @@ return [
     'tenant_role_name_format' => 'Use lowercase letters, digits, underscores or hyphens (max 64 characters).',
     'tenant_role_name_taken' => 'A role with this name already exists in your organization.',
     'tenant_roles_unknown_or_foreign' => 'One or more roles are invalid for this organization.',
-    'tenant_user_roles_required' => 'Assign at least one role.',
+    'roles_required' => 'Assign at least one role.',
 ];

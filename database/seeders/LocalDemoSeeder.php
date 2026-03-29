@@ -18,12 +18,30 @@ class LocalDemoSeeder extends Seeder
             return;
         }
 
-        $tenant = Tenant::query()->create([
-            'slug' => 'demo',
-            'name' => 'Organización demo',
-        ]);
+        $tenantSpecs = [
+            [
+                'slug' => 'demo',
+                'name' => 'Organización demo A',
+                'user_name' => 'Usuario demo A',
+                'user_email' => 'user@cxp.test',
+            ],
+            [
+                'slug' => 'demo-b',
+                'name' => 'Organización demo B',
+                'user_name' => 'Usuario demo B',
+                'user_email' => 'user-b@cxp.test',
+            ],
+        ];
 
-        BootstrapTenantDefaultRoles::run($tenant);
+        $tenants = [];
+        foreach ($tenantSpecs as $spec) {
+            $tenant = Tenant::query()->create([
+                'slug' => $spec['slug'],
+                'name' => $spec['name'],
+            ]);
+            BootstrapTenantDefaultRoles::run($tenant);
+            $tenants[] = ['tenant' => $tenant, 'spec' => $spec];
+        }
 
         setPermissionsTeamId(config('permission.platform_team_id'));
 
@@ -35,15 +53,18 @@ class LocalDemoSeeder extends Seeder
         ]);
         $landlord->assignRole('super_admin');
 
-        setPermissionsTeamId($tenant->getKey());
+        foreach ($tenants as $row) {
+            $tenant = $row['tenant'];
+            $spec = $row['spec'];
+            setPermissionsTeamId($tenant->getKey());
 
-        $tenantUser = User::query()->create([
-            'name' => 'Usuario tenant',
-            'email' => 'user@cxp.test',
-            'password' => Hash::make('password'),
-            'tenant_id' => $tenant->id,
-        ]);
-        $tenantUser->assignRole('tenant_owner');
+            User::query()->create([
+                'name' => $spec['user_name'],
+                'email' => $spec['user_email'],
+                'password' => Hash::make('password'),
+                'tenant_id' => $tenant->id,
+            ])->assignRole('owner');
+        }
 
         setPermissionsTeamId(null);
     }

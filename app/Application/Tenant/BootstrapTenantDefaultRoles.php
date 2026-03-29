@@ -33,18 +33,10 @@ final class BootstrapTenantDefaultRoles
             ->whereIn('name', self::PERMISSIONS)
             ->get();
 
-        $owner = Role::create(['name' => 'tenant_owner', 'guard_name' => $guard]);
+        $owner = Role::create(['name' => 'owner', 'guard_name' => $guard]);
         $owner->syncPermissions($all);
 
-        $support = Role::create(['name' => 'tenant_support', 'guard_name' => $guard]);
-        $support->syncPermissions(
-            Permission::query()
-                ->where('guard_name', $guard)
-                ->whereIn('name', ['access', 'users.view-any'])
-                ->get()
-        );
-
-        $admin = Role::create(['name' => 'tenant_admin', 'guard_name' => $guard]);
+        $admin = Role::create(['name' => 'admin', 'guard_name' => $guard]);
         $admin->syncPermissions(
             Permission::query()
                 ->where('guard_name', $guard)
@@ -57,8 +49,8 @@ final class BootstrapTenantDefaultRoles
                 ->get()
         );
 
-        $user = Role::create(['name' => 'tenant_user', 'guard_name' => $guard]);
-        $user->syncPermissions(
+        $userRole = Role::create(['name' => 'user', 'guard_name' => $guard]);
+        $userRole->syncPermissions(
             Permission::query()
                 ->where('guard_name', $guard)
                 ->whereIn('name', ['access'])
