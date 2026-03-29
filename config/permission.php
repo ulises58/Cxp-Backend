@@ -93,12 +93,16 @@ return [
         'model_morph_key' => 'model_id',
 
         /*
-         * Change this if you want to use the teams feature and your related model's
-         * foreign key is other than `team_id`.
+         * Columna de equipo Spatie = User.tenant_id. Staff landlord usa platform_team_id.
          */
-
-        'team_foreign_key' => 'team_id',
+        'team_foreign_key' => 'tenant_id',
     ],
+
+    /*
+     * Identificador de "equipo" para usuarios landlord (tenant_id null en users).
+     * No debe coincidir con ningún id real de tenants (Stancl suele usar UUID).
+     */
+    'platform_team_id' => '__platform__',
 
     /*
      * When set to true, the method for checking permissions will be registered on the gate.
@@ -135,7 +139,7 @@ return [
      * (view the latest version of this package's migration file)
      */
 
-    'teams' => false,
+    'teams' => true,
 
     /*
      * The class to use to resolve the permissions team id

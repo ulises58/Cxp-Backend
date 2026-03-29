@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Application\Tenant\BootstrapTenantDefaultRoles;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -22,6 +23,10 @@ class LocalDemoSeeder extends Seeder
             'name' => 'Organización demo',
         ]);
 
+        BootstrapTenantDefaultRoles::run($tenant);
+
+        setPermissionsTeamId(config('permission.platform_team_id'));
+
         $landlord = User::query()->create([
             'name' => 'Super Admin',
             'email' => 'landlord@cxp.test',
@@ -30,12 +35,16 @@ class LocalDemoSeeder extends Seeder
         ]);
         $landlord->assignRole('super_admin');
 
+        setPermissionsTeamId($tenant->getKey());
+
         $tenantUser = User::query()->create([
             'name' => 'Usuario tenant',
             'email' => 'user@cxp.test',
             'password' => Hash::make('password'),
             'tenant_id' => $tenant->id,
         ]);
-        $tenantUser->assignRole('tenant_admin');
+        $tenantUser->assignRole('tenant_owner');
+
+        setPermissionsTeamId(null);
     }
 }

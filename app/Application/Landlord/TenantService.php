@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Landlord;
 
+use App\Application\Tenant\BootstrapTenantDefaultRoles;
 use App\Models\Tenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -18,11 +19,15 @@ final class TenantService
 
     public function create(string $slug, ?string $name, bool $isActive = true): Tenant
     {
-        return Tenant::query()->create([
+        $tenant = Tenant::query()->create([
             'slug' => $slug,
             'name' => $name,
             'is_active' => $isActive,
         ]);
+
+        BootstrapTenantDefaultRoles::run($tenant);
+
+        return $tenant->refresh();
     }
 
     public function update(Tenant $tenant, string $slug, ?string $name, bool $isActive): Tenant

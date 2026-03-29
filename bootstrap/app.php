@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureLandlordStaff;
 use App\Http\Middleware\InitializeTenancyFromAuthenticatedUser;
 use App\Http\Middleware\SetApiLocale;
+use App\Http\Middleware\SetPermissionsTeamFromAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetApiLocale::class,
         ]);
         $middleware->alias([
+            'permission.team' => SetPermissionsTeamFromAuth::class,
             'tenant.context' => InitializeTenancyFromAuthenticatedUser::class,
             'landlord' => EnsureLandlordStaff::class,
             'permission' => PermissionMiddleware::class,

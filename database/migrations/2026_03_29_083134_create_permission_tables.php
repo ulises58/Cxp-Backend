@@ -35,23 +35,26 @@ return new class extends Migration
         /**
          * See `docs/prerequisites.md` for suggested lengths on 'name' and 'guard_name' if "1071 Specified key was too long" errors are encountered.
          */
-        Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames) {
+        $teamKey = $columnNames['team_foreign_key'] ?? 'tenant_id';
+
+        Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames, $teamKey) {
             $table->id(); // role id
             if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
-                $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
-                $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
+                // string: ids de Stancl\Tenancy son string (p. ej. UUID)
+                $table->string($teamKey, 191)->nullable();
+                $table->index($teamKey, 'roles_'.$teamKey.'_index');
             }
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
             if ($teams || config('permission.testing')) {
-                $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
+                $table->unique([$teamKey, 'name', 'guard_name']);
             } else {
                 $table->unique(['name', 'guard_name']);
             }
         });
 
-        Schema::create($tableNames['model_has_permissions'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {
+        Schema::create($tableNames['model_has_permissions'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams, $teamKey) {
             $table->unsignedBigInteger($pivotPermission);
 
             $table->string('model_type');
@@ -63,10 +66,10 @@ return new class extends Migration
                 ->on($tableNames['permissions'])
                 ->cascadeOnDelete();
             if ($teams) {
-                $table->unsignedBigInteger($columnNames['team_foreign_key']);
-                $table->index($columnNames['team_foreign_key'], 'model_has_permissions_team_foreign_key_index');
+                $table->string($teamKey, 191);
+                $table->index($teamKey, 'model_has_permissions_'.$teamKey.'_index');
 
-                $table->primary([$columnNames['team_foreign_key'], $pivotPermission, $columnNames['model_morph_key'], 'model_type'],
+                $table->primary([$teamKey, $pivotPermission, $columnNames['model_morph_key'], 'model_type'],
                     'model_has_permissions_permission_model_type_primary');
             } else {
                 $table->primary([$pivotPermission, $columnNames['model_morph_key'], 'model_type'],
@@ -74,7 +77,7 @@ return new class extends Migration
             }
         });
 
-        Schema::create($tableNames['model_has_roles'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotRole, $teams) {
+        Schema::create($tableNames['model_has_roles'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotRole, $teams, $teamKey) {
             $table->unsignedBigInteger($pivotRole);
 
             $table->string('model_type');
@@ -86,10 +89,10 @@ return new class extends Migration
                 ->on($tableNames['roles'])
                 ->cascadeOnDelete();
             if ($teams) {
-                $table->unsignedBigInteger($columnNames['team_foreign_key']);
-                $table->index($columnNames['team_foreign_key'], 'model_has_roles_team_foreign_key_index');
+                $table->string($teamKey, 191);
+                $table->index($teamKey, 'model_has_roles_'.$teamKey.'_index');
 
-                $table->primary([$columnNames['team_foreign_key'], $pivotRole, $columnNames['model_morph_key'], 'model_type'],
+                $table->primary([$teamKey, $pivotRole, $columnNames['model_morph_key'], 'model_type'],
                     'model_has_roles_role_model_type_primary');
             } else {
                 $table->primary([$pivotRole, $columnNames['model_morph_key'], 'model_type'],

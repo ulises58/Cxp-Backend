@@ -22,6 +22,12 @@ class LoginController extends Controller
             ], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
+        if ($user->tenant_id === null) {
+            setPermissionsTeamId(config('permission.platform_team_id'));
+        } else {
+            setPermissionsTeamId($user->tenant_id);
+        }
+
         $user->load(['roles', 'tenant']);
 
         if ($user->tenant_id !== null && $user->tenant !== null && ! $user->tenant->is_active) {
