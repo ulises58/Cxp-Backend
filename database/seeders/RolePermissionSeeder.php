@@ -23,6 +23,8 @@ class RolePermissionSeeder extends Seeder
             'tenants.read',
             'tenants.update',
             'tenants.delete',
+            'tenant-users.view-any',
+            'tenant-users.create',
         ];
 
         foreach (array_merge($landlordPermissions, BootstrapTenantDefaultRoles::PERMISSIONS) as $name) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Landlord\HealthController;
+use App\Http\Controllers\Api\V1\Landlord\LandlordTenantUserController;
 use App\Http\Controllers\Api\V1\Landlord\TenantController;
 use App\Http\Controllers\Api\V1\Tenant\PermissionCatalogController;
 use App\Http\Controllers\Api\V1\Tenant\ProfileController;
@@ -16,6 +17,9 @@ Route::post('auth/login', LoginController::class)->middleware('throttle:10,1');
 Route::middleware(['auth:sanctum', 'permission.team'])->group(function (): void {
     Route::prefix('landlord')->middleware('landlord')->group(function (): void {
         Route::get('health', HealthController::class);
+        Route::get('tenants/{tenant}/roles', [LandlordTenantUserController::class, 'roles']);
+        Route::get('tenants/{tenant}/users', [LandlordTenantUserController::class, 'index']);
+        Route::post('tenants/{tenant}/users', [LandlordTenantUserController::class, 'store']);
         Route::apiResource('tenants', TenantController::class);
     });
 
