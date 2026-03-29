@@ -21,6 +21,16 @@ final class BootstrapTenantDefaultRoles
         'users.remove',
         'roles.manage',
         'settings.manage',
+        'sites.view-any',
+        'sites.create',
+        'sites.read',
+        'sites.update',
+        'sites.delete',
+        'locations.view-any',
+        'locations.create',
+        'locations.read',
+        'locations.update',
+        'locations.delete',
     ];
 
     public static function run(Tenant $tenant): void
@@ -45,6 +55,16 @@ final class BootstrapTenantDefaultRoles
                     'users.view-any',
                     'users.invite',
                     'users.remove',
+                    'sites.view-any',
+                    'sites.create',
+                    'sites.read',
+                    'sites.update',
+                    'sites.delete',
+                    'locations.view-any',
+                    'locations.create',
+                    'locations.read',
+                    'locations.update',
+                    'locations.delete',
                 ])
                 ->get()
         );
@@ -53,7 +73,13 @@ final class BootstrapTenantDefaultRoles
         $userRole->syncPermissions(
             Permission::query()
                 ->where('guard_name', $guard)
-                ->whereIn('name', ['access'])
+                ->whereIn('name', [
+                    'access',
+                    'sites.view-any',
+                    'sites.read',
+                    'locations.view-any',
+                    'locations.read',
+                ])
                 ->get()
         );
 

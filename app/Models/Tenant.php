@@ -26,4 +26,9 @@ class Tenant extends BaseTenant
     {
         return $this->hasMany(User::class, 'tenant_id', 'id');
     }
+
+    public function sites(): HasMany
+    {
+        return $this->hasMany(Site::class, 'tenant_id', 'id');
+    }
 }

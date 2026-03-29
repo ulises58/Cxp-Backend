@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Location;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -47,6 +49,36 @@ class AppServiceProvider extends ServiceProvider
             abort_if($user === null, 404);
 
             return $user;
+        });
+
+        Route::bind('tenantSite', function (string $value): Site {
+            $tenantId = auth()->user()?->tenant_id;
+            abort_if($tenantId === null, 404);
+
+            $site = Site::query()
+                ->where('id', $value)
+                ->where('tenant_id', $tenantId)
+                ->first();
+            abort_if($site === null, 404);
+
+            return $site;
+        });
+
+        Route::bind('tenantLocation', function (string $value, \Illuminate\Routing\Route $route): Location {
+            $tenantId = auth()->user()?->tenant_id;
+            abort_if($tenantId === null, 404);
+
+            $site = $route->parameter('tenantSite');
+            abort_if(! $site instanceof Site, 404);
+
+            $location = Location::query()
+                ->where('id', $value)
+                ->where('tenant_id', $tenantId)
+                ->where('site_id', $site->id)
+                ->first();
+            abort_if($location === null, 404);
+
+            return $location;
         });
     }
 }
