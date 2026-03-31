@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Tenant;
 
-use App\Application\Tenant\BootstrapTenantDefaultRoles;
+use App\Domain\Shared\Enums\CxpPermission;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -28,7 +28,7 @@ class StoreTenantRoleRequest extends FormRequest
                 'regex:/^[a-z][a-z0-9_-]{0,63}$/',
             ],
             'permissions' => ['required', 'array', 'min:1'],
-            'permissions.*' => ['string', Rule::in(BootstrapTenantDefaultRoles::PERMISSIONS)],
+            'permissions.*' => ['string', Rule::in(CxpPermission::tenantRoleCatalogValues())],
         ];
     }
 }

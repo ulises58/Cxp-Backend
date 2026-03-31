@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Auth;
+namespace App\Domain\Auth\Actions;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-final class AuthenticateUserWithPassword
+final class AuthenticateUserWithPasswordAction
 {
     public function __invoke(string $email, string $password): ?User
     {

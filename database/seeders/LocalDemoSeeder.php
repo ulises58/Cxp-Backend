@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Application\Tenant\BootstrapTenantDefaultRoles;
+use App\Domain\Tenant\Actions\BootstrapTenantDefaultRolesAction;
 use App\Models\Location;
 use App\Models\Site;
 use App\Models\Tenant;
@@ -41,7 +41,7 @@ class LocalDemoSeeder extends Seeder
                 'slug' => $spec['slug'],
                 'name' => $spec['name'],
             ]);
-            BootstrapTenantDefaultRoles::run($tenant);
+            app(BootstrapTenantDefaultRolesAction::class)($tenant);
 
             $site = Site::query()->create([
                 'tenant_id' => $tenant->id,

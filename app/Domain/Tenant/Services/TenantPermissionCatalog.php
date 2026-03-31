@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Tenant;
+namespace App\Domain\Tenant\Services;
 
+use App\Domain\Shared\Enums\CxpPermission;
 use Illuminate\Database\Eloquent\Collection;
 use Spatie\Permission\Models\Permission;
 
@@ -18,7 +19,7 @@ final class TenantPermissionCatalog
     {
         return Permission::query()
             ->where('guard_name', 'sanctum')
-            ->whereIn('name', BootstrapTenantDefaultRoles::PERMISSIONS)
+            ->whereIn('name', CxpPermission::tenantRoleCatalogValues())
             ->orderBy('name')
             ->get();
     }

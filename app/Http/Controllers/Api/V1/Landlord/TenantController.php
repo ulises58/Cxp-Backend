@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Landlord;
 
-use App\Application\Landlord\TenantService;
+use App\Domain\Landlord\Services\TenantService;
+use App\Domain\Shared\Enums\CxpPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Landlord\StoreTenantRequest;
 use App\Http\Requests\Api\V1\Landlord\UpdateTenantRequest;
@@ -18,11 +19,11 @@ class TenantController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:tenants.view-any')->only(['index']);
-        $this->middleware('permission:tenants.create')->only(['store']);
-        $this->middleware('permission:tenants.read')->only(['show']);
-        $this->middleware('permission:tenants.update')->only(['update']);
-        $this->middleware('permission:tenants.delete')->only(['destroy']);
+        $this->middleware(CxpPermission::TenantsViewAny->asMiddleware())->only(['index']);
+        $this->middleware(CxpPermission::TenantsCreate->asMiddleware())->only(['store']);
+        $this->middleware(CxpPermission::TenantsRead->asMiddleware())->only(['show']);
+        $this->middleware(CxpPermission::TenantsUpdate->asMiddleware())->only(['update']);
+        $this->middleware(CxpPermission::TenantsDelete->asMiddleware())->only(['destroy']);
     }
 
     public function index(Request $request, TenantService $tenants): JsonResponse

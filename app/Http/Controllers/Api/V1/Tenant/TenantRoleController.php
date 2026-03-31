@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
-use App\Application\Tenant\TenantRoleService;
+use App\Domain\Shared\Enums\CxpPermission;
+use App\Domain\Tenant\Services\TenantRoleService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Tenant\StoreTenantRoleRequest;
 use App\Http\Requests\Api\V1\Tenant\UpdateTenantRoleRequest;
@@ -17,7 +18,7 @@ class TenantRoleController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:roles.manage');
+        $this->middleware(CxpPermission::RolesManage->asMiddleware());
     }
 
     public function index(TenantRoleService $roles): JsonResponse

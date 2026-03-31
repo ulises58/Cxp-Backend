@@ -37,7 +37,7 @@ return new class extends Migration
          */
         $teamKey = $columnNames['team_foreign_key'] ?? 'tenant_id';
 
-        Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames, $teamKey) {
+        Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $teamKey) {
             $table->id(); // role id
             if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
                 // string: ids de Stancl\Tenancy son string (p. ej. UUID)

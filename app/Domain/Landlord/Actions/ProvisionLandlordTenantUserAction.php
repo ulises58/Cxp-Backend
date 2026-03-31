@@ -2,30 +2,26 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Landlord;
+namespace App\Domain\Landlord\Actions;
 
 use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-final class LandlordTenantUserService
+final class ProvisionLandlordTenantUserAction
 {
-    public function paginateForTenant(Tenant $tenant, int $perPage): LengthAwarePaginator
-    {
-        return User::query()
-            ->where('tenant_id', $tenant->id)
-            ->orderBy('name')
-            ->paginate($perPage);
-    }
-
     /**
      * @param  array<int, string>  $roleNames
      */
-    public function create(Tenant $tenant, string $name, string $email, string $password, array $roleNames): User
-    {
+    public function __invoke(
+        Tenant $tenant,
+        string $name,
+        string $email,
+        string $password,
+        array $roleNames,
+    ): User {
         $this->assertRolesBelongToTenant($tenant, $roleNames);
 
         $user = User::create([

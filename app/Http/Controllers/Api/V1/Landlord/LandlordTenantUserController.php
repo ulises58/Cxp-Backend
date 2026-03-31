@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Landlord;
 
-use App\Application\Landlord\LandlordTenantUserService;
+use App\Domain\Landlord\Services\LandlordTenantUserService;
+use App\Domain\Shared\Enums\CxpPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Landlord\StoreLandlordTenantUserRequest;
 use App\Http\Resources\Api\V1\UserResource;
@@ -18,9 +19,12 @@ class LandlordTenantUserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:tenant-users.view-any')->only(['index']);
-        $this->middleware('permission:tenant-users.create')->only(['store']);
-        $this->middleware('permission:tenant-users.view-any|tenant-users.create')->only(['roles']);
+        $this->middleware(CxpPermission::TenantUsersViewAny->asMiddleware())->only(['index']);
+        $this->middleware(CxpPermission::TenantUsersCreate->asMiddleware())->only(['store']);
+        $this->middleware(CxpPermission::middlewareOr(
+            CxpPermission::TenantUsersViewAny,
+            CxpPermission::TenantUsersCreate,
+        ))->only(['roles']);
     }
 
     public function roles(Tenant $tenant): JsonResponse

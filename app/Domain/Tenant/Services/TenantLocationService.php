@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Tenant;
+namespace App\Domain\Tenant\Services;
 
 use App\Models\Location;
 use App\Models\Site;

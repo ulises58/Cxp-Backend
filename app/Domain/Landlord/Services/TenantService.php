@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Landlord;
+namespace App\Domain\Landlord\Services;
 
-use App\Application\Tenant\BootstrapTenantDefaultRoles;
+use App\Domain\Tenant\Actions\BootstrapTenantDefaultRolesAction;
 use App\Models\Tenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class TenantService
 {
+    public function __construct(
+        private readonly BootstrapTenantDefaultRolesAction $bootstrapDefaultRoles,
+    ) {}
+
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return Tenant::query()
@@ -25,7 +29,7 @@ final class TenantService
             'is_active' => $isActive,
         ]);
 
-        BootstrapTenantDefaultRoles::run($tenant);
+        ($this->bootstrapDefaultRoles)($tenant);
 
         return $tenant->refresh();
     }

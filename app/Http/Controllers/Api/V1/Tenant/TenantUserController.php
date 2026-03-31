@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
-use App\Application\Tenant\TenantMemberService;
+use App\Domain\Shared\Enums\CxpPermission;
+use App\Domain\Tenant\Services\TenantMemberService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Tenant\SyncTenantUserRolesRequest;
 use App\Http\Resources\Api\V1\UserResource;
@@ -17,8 +18,8 @@ class TenantUserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:users.view-any')->only(['index', 'show']);
-        $this->middleware('permission:users.invite')->only(['syncRoles']);
+        $this->middleware(CxpPermission::UsersViewAny->asMiddleware())->only(['index', 'show']);
+        $this->middleware(CxpPermission::UsersInvite->asMiddleware())->only(['syncRoles']);
     }
 
     public function index(Request $request, TenantMemberService $members): JsonResponse

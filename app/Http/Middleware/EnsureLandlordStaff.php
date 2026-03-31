@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Domain\Shared\Enums\CxpPermission;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,7 @@ class EnsureLandlordStaff
             abort(Response::HTTP_FORBIDDEN, __('api.landlord_only'));
         }
 
-        if (! $user->can('landlord.panel')) {
+        if (! $user->can(CxpPermission::LandlordPanel->value)) {
             abort(Response::HTTP_FORBIDDEN, __('api.landlord_access_denied'));
         }
 
