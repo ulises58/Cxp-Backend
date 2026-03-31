@@ -6,9 +6,8 @@ namespace App\Http\Requests\Api\V1\Tenant;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreTenantSiteRequest extends FormRequest
+class UpdateTenantGroupRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -21,13 +20,8 @@ class StoreTenantSiteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:65535'],
-            'group_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('groups', 'id')->where('tenant_id', (string) $this->user()->tenant_id),
-            ],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:65535'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

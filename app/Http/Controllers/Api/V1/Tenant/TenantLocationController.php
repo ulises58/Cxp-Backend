@@ -45,6 +45,17 @@ class TenantLocationController extends Controller
             $tenantSite,
             $validated['name'],
             $validated['description'] ?? null,
+            $validated['address'] ?? null,
+            ! array_key_exists('latitude', $validated) || $validated['latitude'] === null
+                ? null
+                : (float) $validated['latitude'],
+            ! array_key_exists('longitude', $validated) || $validated['longitude'] === null
+                ? null
+                : (float) $validated['longitude'],
+            ! array_key_exists('radius', $validated) || $validated['radius'] === null
+                ? null
+                : (float) $validated['radius'],
+            $validated['timezone'] ?? null,
             $validated['metadata'] ?? null,
             (bool) ($validated['is_active'] ?? true),
         );
@@ -74,11 +85,31 @@ class TenantLocationController extends Controller
         $metadata = array_key_exists('metadata', $validated)
             ? $validated['metadata']
             : $tenantLocation->metadata;
+        $address = array_key_exists('address', $validated)
+            ? $validated['address']
+            : $tenantLocation->address;
+        $latitude = array_key_exists('latitude', $validated)
+            ? ($validated['latitude'] !== null ? (float) $validated['latitude'] : null)
+            : $tenantLocation->latitude;
+        $longitude = array_key_exists('longitude', $validated)
+            ? ($validated['longitude'] !== null ? (float) $validated['longitude'] : null)
+            : $tenantLocation->longitude;
+        $radius = array_key_exists('radius', $validated)
+            ? ($validated['radius'] !== null ? (float) $validated['radius'] : null)
+            : $tenantLocation->radius;
+        $timezone = array_key_exists('timezone', $validated)
+            ? $validated['timezone']
+            : $tenantLocation->timezone;
 
         $location = $locations->update(
             $tenantLocation,
             $validated['name'] ?? $tenantLocation->name,
             $description,
+            $address,
+            $latitude,
+            $longitude,
+            $radius,
+            $timezone,
             $metadata,
             array_key_exists('is_active', $validated)
                 ? (bool) $validated['is_active']

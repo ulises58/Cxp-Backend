@@ -10,9 +10,26 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('groups', function (Blueprint $table) {
+            $table->id();
+            $table->string('tenant_id');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+
+            $table->foreign('tenant_id')
+                ->references('id')
+                ->on('tenants')
+                ->cascadeOnDelete();
+
+            $table->unique(['tenant_id', 'name']);
+        });
+
         Schema::create('sites', function (Blueprint $table) {
             $table->id();
             $table->string('tenant_id');
+            $table->foreignId('group_id')->nullable()->constrained('groups')->nullOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
@@ -30,5 +47,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('sites');
+        Schema::dropIfExists('groups');
     }
 };

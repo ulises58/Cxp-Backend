@@ -57,6 +57,10 @@ final class TenantSitesAndLocationsApiTest extends ApiV1TestCase
             ->assertOk();
 
         $this->actingAsTenant($member)
+            ->getJson($this->v1('groups'))
+            ->assertOk();
+
+        $this->actingAsTenant($member)
             ->postJson($this->v1('sites/'.$siteId.'/locations'), [
                 'name' => 'Blocked',
                 'is_active' => true,
@@ -92,10 +96,32 @@ final class TenantSitesAndLocationsApiTest extends ApiV1TestCase
             ->assertOk()
             ->assertJsonPath('data.is_active', false);
 
+        $groupId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), [
+                'name' => 'North region',
+                'description' => 'Ops',
+                'is_active' => true,
+            ])
+            ->assertCreated()
+            ->json('data.id');
+
+        $this->actingAsTenant($owner)
+            ->patchJson($this->v1('sites/'.$siteId), [
+                'group_id' => (int) $groupId,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.group_id', (string) $groupId)
+            ->assertJsonPath('data.group.name', 'North region');
+
         $createLoc = $this->actingAsTenant($owner)
             ->postJson($this->v1('sites/'.$siteId.'/locations'), [
                 'name' => 'Warehouse',
                 'description' => 'Back',
+                'address' => 'Calle 1',
+                'latitude' => 19.4326,
+                'longitude' => -99.1332,
+                'radius' => 100.5,
+                'timezone' => 'America/Mexico_City',
                 'metadata' => ['zone' => 'north'],
                 'is_active' => true,
             ]);
@@ -109,7 +135,9 @@ final class TenantSitesAndLocationsApiTest extends ApiV1TestCase
                 'metadata' => ['zone' => 'east'],
             ])
             ->assertOk()
-            ->assertJsonPath('data.name', 'Warehouse east');
+            ->assertJsonPath('data.name', 'Warehouse east')
+            ->assertJsonPath('data.address', 'Calle 1')
+            ->assertJsonPath('data.timezone', 'America/Mexico_City');
 
         $this->actingAsTenant($owner)
             ->deleteJson($this->v1('sites/'.$siteId.'/locations/'.$locId))
@@ -136,5 +164,25 @@ final class TenantSitesAndLocationsApiTest extends ApiV1TestCase
         $this->actingAsTenant($ownerA)
             ->getJson($this->v1('sites/'.$siteBId))
             ->assertNotFound();
+    }
+
+    public function test_owner_cannot_assign_foreign_group_to_site(): void
+    {
+        $tenantA = $this->createTenant();
+        $tenantB = $this->createTenant();
+        $ownerA = $this->createTenantUser($tenantA, 'owner');
+        $ownerB = $this->createTenantUser($tenantB, 'owner');
+
+        $groupBId = $this->actingAsTenant($ownerB)
+            ->postJson($this->v1('groups'), ['name' => 'B group', 'is_active' => true])
+            ->json('data.id');
+
+        $this->actingAsTenant($ownerA)
+            ->postJson($this->v1('sites'), [
+                'name' => 'Bad group ref',
+                'is_active' => true,
+                'group_id' => (int) $groupBId,
+            ])
+            ->assertUnprocessable();
     }
 }

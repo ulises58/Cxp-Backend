@@ -16,6 +16,11 @@ return new class extends Migration
             $table->foreignId('site_id')->constrained('sites')->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->text('address')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->decimal('radius', 12, 2)->nullable()->comment('Geofence radius in meters');
+            $table->string('timezone', 64)->nullable();
             $table->json('metadata')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

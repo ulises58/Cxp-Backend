@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Landlord\LandlordTenantUserController;
 use App\Http\Controllers\Api\V1\Landlord\TenantController;
 use App\Http\Controllers\Api\V1\Tenant\PermissionCatalogController;
 use App\Http\Controllers\Api\V1\Tenant\ProfileController;
+use App\Http\Controllers\Api\V1\Tenant\TenantGroupController;
 use App\Http\Controllers\Api\V1\Tenant\TenantLocationController;
 use App\Http\Controllers\Api\V1\Tenant\TenantRoleController;
 use App\Http\Controllers\Api\V1\Tenant\TenantSiteController;
@@ -39,6 +40,9 @@ Route::middleware(['auth:sanctum', 'permission.team'])->group(function (): void 
         Route::get('users', [TenantUserController::class, 'index']);
         Route::get('users/{tenantUser}', [TenantUserController::class, 'show']);
         Route::patch('users/{tenantUser}/roles', [TenantUserController::class, 'syncRoles']);
+
+        Route::apiResource('groups', TenantGroupController::class)
+            ->parameters(['groups' => 'tenantGroup']);
 
         Route::apiResource('sites', TenantSiteController::class)
             ->parameters(['sites' => 'tenantSite']);

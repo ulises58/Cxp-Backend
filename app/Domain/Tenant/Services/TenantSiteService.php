@@ -19,23 +19,33 @@ final class TenantSiteService
         return $this->sites->paginateForTenant($this->tenantId(), $perPage);
     }
 
-    public function create(string $name, ?string $description, bool $isActive): Site
+    public function create(string $name, ?string $description, bool $isActive, ?int $groupId): Site
     {
         return $this->sites->create([
             'tenant_id' => $this->tenantId(),
+            'group_id' => $groupId,
             'name' => $name,
             'description' => $description,
             'is_active' => $isActive,
         ]);
     }
 
-    public function update(Site $site, string $name, ?string $description, bool $isActive): Site
-    {
+    public function update(
+        Site $site,
+        string $name,
+        ?string $description,
+        bool $isActive,
+        ?int $groupId,
+        bool $groupIdProvided,
+    ): Site {
         $this->assertSameTenant($site);
 
         $site->name = $name;
         $site->description = $description;
         $site->is_active = $isActive;
+        if ($groupIdProvided) {
+            $site->group_id = $groupId;
+        }
         $site->save();
 
         return $site->refresh();

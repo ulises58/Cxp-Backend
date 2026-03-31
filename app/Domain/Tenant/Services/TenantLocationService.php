@@ -32,6 +32,11 @@ final class TenantLocationService
         Site $site,
         string $name,
         ?string $description,
+        ?string $address,
+        ?float $latitude,
+        ?float $longitude,
+        ?float $radius,
+        ?string $timezone,
         ?array $metadata,
         bool $isActive,
     ): Location {
@@ -42,6 +47,11 @@ final class TenantLocationService
             'site_id' => $site->id,
             'name' => $name,
             'description' => $description,
+            'address' => $address,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'radius' => $radius,
+            'timezone' => $timezone,
             'metadata' => $metadata,
             'is_active' => $isActive,
         ]);
@@ -51,6 +61,11 @@ final class TenantLocationService
         Location $location,
         string $name,
         ?string $description,
+        ?string $address,
+        ?float $latitude,
+        ?float $longitude,
+        ?float $radius,
+        ?string $timezone,
         ?array $metadata,
         bool $isActive,
     ): Location {
@@ -58,6 +73,11 @@ final class TenantLocationService
 
         $location->name = $name;
         $location->description = $description;
+        $location->address = $address;
+        $location->latitude = $latitude;
+        $location->longitude = $longitude;
+        $location->radius = $radius;
+        $location->timezone = $timezone;
         $location->metadata = $metadata;
         $location->is_active = $isActive;
         $location->save();

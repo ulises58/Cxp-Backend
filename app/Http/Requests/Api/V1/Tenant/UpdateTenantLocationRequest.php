@@ -22,6 +22,11 @@ class UpdateTenantLocationRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:65535'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:65535'],
+            'latitude' => ['sometimes', 'nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['sometimes', 'nullable', 'numeric', 'between:-180,180'],
+            'radius' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'timezone' => ['sometimes', 'nullable', 'string', 'max:64'],
             'metadata' => ['sometimes', 'nullable', 'array'],
             'is_active' => ['sometimes', 'boolean'],
         ];

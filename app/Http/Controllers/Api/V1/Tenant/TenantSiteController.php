@@ -44,6 +44,9 @@ class TenantSiteController extends Controller
             $validated['name'],
             $validated['description'] ?? null,
             (bool) ($validated['is_active'] ?? true),
+            isset($validated['group_id']) && $validated['group_id'] !== null
+                ? (int) $validated['group_id']
+                : null,
         );
 
         return response()->json([
@@ -65,6 +68,11 @@ class TenantSiteController extends Controller
             ? $validated['description']
             : $tenantSite->description;
 
+        $groupIdInRequest = array_key_exists('group_id', $validated);
+        $groupId = $groupIdInRequest
+            ? ($validated['group_id'] !== null ? (int) $validated['group_id'] : null)
+            : null;
+
         $site = $sites->update(
             $tenantSite,
             $validated['name'] ?? $tenantSite->name,
@@ -72,6 +80,8 @@ class TenantSiteController extends Controller
             array_key_exists('is_active', $validated)
                 ? (bool) $validated['is_active']
                 : $tenantSite->is_active,
+            $groupId,
+            $groupIdInRequest,
         );
 
         return response()->json([

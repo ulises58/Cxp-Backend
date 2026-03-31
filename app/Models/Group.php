@@ -7,30 +7,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable([
-    'tenant_id',
-    'site_id',
-    'name',
-    'description',
-    'address',
-    'latitude',
-    'longitude',
-    'radius',
-    'timezone',
-    'metadata',
-    'is_active',
-])]
-class Location extends Model
+#[Fillable(['tenant_id', 'name', 'description', 'is_active'])]
+class Group extends Model
 {
+    protected $table = 'groups';
+
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
-            'metadata' => 'array',
-            'latitude' => 'float',
-            'longitude' => 'float',
-            'radius' => 'float',
         ];
     }
 
@@ -39,8 +26,8 @@ class Location extends Model
         return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
     }
 
-    public function site(): BelongsTo
+    public function sites(): HasMany
     {
-        return $this->belongsTo(Site::class);
+        return $this->hasMany(Site::class);
     }
 }

@@ -24,6 +24,12 @@ enum CxpPermission: string
     case SitesUpdate = 'sites.update';
     case SitesDelete = 'sites.delete';
 
+    case GroupsViewAny = 'groups.view-any';
+    case GroupsCreate = 'groups.create';
+    case GroupsRead = 'groups.read';
+    case GroupsUpdate = 'groups.update';
+    case GroupsDelete = 'groups.delete';
+
     case LocationsViewAny = 'locations.view-any';
     case LocationsCreate = 'locations.create';
     case LocationsRead = 'locations.read';
@@ -73,6 +79,11 @@ enum CxpPermission: string
             self::SitesRead,
             self::SitesUpdate,
             self::SitesDelete,
+            self::GroupsViewAny,
+            self::GroupsCreate,
+            self::GroupsRead,
+            self::GroupsUpdate,
+            self::GroupsDelete,
             self::LocationsViewAny,
             self::LocationsCreate,
             self::LocationsRead,
@@ -136,6 +147,11 @@ enum CxpPermission: string
             self::SitesRead,
             self::SitesUpdate,
             self::SitesDelete,
+            self::GroupsViewAny,
+            self::GroupsCreate,
+            self::GroupsRead,
+            self::GroupsUpdate,
+            self::GroupsDelete,
             self::LocationsViewAny,
             self::LocationsCreate,
             self::LocationsRead,
@@ -155,6 +171,8 @@ enum CxpPermission: string
             self::Access,
             self::SitesViewAny,
             self::SitesRead,
+            self::GroupsViewAny,
+            self::GroupsRead,
             self::LocationsViewAny,
             self::LocationsRead,
         ];

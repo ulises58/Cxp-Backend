@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Group;
 use App\Models\Location;
 use App\Models\Site;
 use App\Models\User;
@@ -49,6 +50,19 @@ class AppServiceProvider extends ServiceProvider
             abort_if($user === null, 404);
 
             return $user;
+        });
+
+        Route::bind('tenantGroup', function (string $value): Group {
+            $tenantId = auth()->user()?->tenant_id;
+            abort_if($tenantId === null, 404);
+
+            $group = Group::query()
+                ->where('id', $value)
+                ->where('tenant_id', $tenantId)
+                ->first();
+            abort_if($group === null, 404);
+
+            return $group;
         });
 
         Route::bind('tenantSite', function (string $value): Site {

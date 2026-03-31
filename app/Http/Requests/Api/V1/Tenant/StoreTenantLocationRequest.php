@@ -22,6 +22,11 @@ class StoreTenantLocationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:65535'],
+            'address' => ['nullable', 'string', 'max:65535'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'radius' => ['nullable', 'numeric', 'min:0'],
+            'timezone' => ['nullable', 'string', 'max:64'],
             'metadata' => ['nullable', 'array'],
             'is_active' => ['sometimes', 'boolean'],
         ];
