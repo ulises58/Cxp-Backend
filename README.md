@@ -1,58 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CXP Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST **multitenancy** pensada como **base reutilizable** para productos SaaS: un solo código, varios tenants, permisos por equipo (tenant) y un panel “landlord” para operación de plataforma.
 
-## About Laravel
+> Convenciones probadas con tests de integración (`tests/Feature/Api/V1`). Úsalo como plantilla y extiende dominio (`app/Domain`), DTOs (`Spatie Laravel Data`) y permisos (`CxpPermission`) de forma coherente.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack principal
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Pieza | Uso en este proyecto |
+|--------|----------------------|
+| **Laravel 13** | Framework, rutas API, Eloquent |
+| **Laravel Sanctum** | Tokens API (`auth:sanctum`) |
+| **stancl/tenancy** | Modelo `Tenant`, inicialización de contexto tenant (`Tenancy::initialize`) |
+| **spatie/laravel-permission** | Roles y permisos con **teams** = tenant (y equipo platform para landlord) |
+| **spatie/laravel-data** | Respuestas API v1 tipadas (`*Data::toArray()`) |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Modelo mental: dos mundos en la misma API
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Landlord (plataforma)**  
+   Usuarios sin `tenant_id` (o con equipo platform). Rutas bajo prefijo `landlord`, middleware `landlord`. Ej.: CRUD de tenants, alta de usuarios en un tenant.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+2. **Tenant (organización cliente)**  
+   Usuarios con `tenant_id`. Rutas bajo middleware `tenant.context`, que exige usuario con tenant activo y ejecuta `Tenancy::initialize($tenant)`. Los permisos Spatie se resuelven con `setPermissionsTeamId` vía middleware `permission.team`.
 
-## Agentic Development
+El **catálogo de permisos** que un tenant puede asignar a sus roles está acotado en `App\Domain\Shared\Enums\CxpPermission::tenantRoleCatalog()`.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
-```bash
-composer require laravel/boost --dev
+## Datos por tenant (recursos de negocio)
 
-php artisan boost:install
+Orden conceptual:
+
+```
+Tenant
+  └── Group (opcional, agrupación lógica)
+  └── Site
+        └── Location (dirección, geo opcional, timezone, metadata JSON)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+- **`groups`**: pertenecen al tenant (`tenant_id`); un **site** puede tener `group_id` nullable.
+- **`sites`** y **`locations`**: siempre acotados por `tenant_id` y, en locations, por `site_id`.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## API v1
 
-## Code of Conduct
+- Prefijo: **`/api/v1`** (definido en `routes/api.php` → `routes/api/v1.php`).
+- Autenticación: **Bearer Sanctum** (header `Authorization: Bearer {token}`).
+- Respuestas de recurso único: habitualmente `{ "data": { ... } }`; listados paginados: formato paginator + `meta` / `links` según `ApiV1PaginatedResponse`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Rutas tenant (ejemplos)
 
-## Security Vulnerabilities
+| Área | Rutas |
+|------|--------|
+| Perfil | `GET /profile` |
+| Permisos asignables | `GET /permissions` (requiere `roles.manage`) |
+| Roles | `GET/POST /roles`, `GET/PATCH/DELETE /roles/{id}` |
+| Usuarios | `GET /users`, `GET /users/{id}`, `PATCH /users/{id}/roles` |
+| Grupos | `GET/POST /groups`, `GET/PATCH/DELETE /groups/{id}` |
+| Sites | `GET/POST /sites`, `GET/PATCH/DELETE /sites/{id}` |
+| Locations | Anidadas: `/sites/{site}/locations` (api resource) |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Los nombres de parámetro en ruta (`tenantSite`, `tenantGroup`, etc.) se resuelven con **bindings personalizados** para evitar acceso cruzado entre tenants (IDOR).
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Seguridad multitenancy: `Route::bind`
+
+En `App\Providers\AppServiceProvider` se registran resolutores para parámetros como `tenantSite`, `tenantGroup`, `tenantLocation`, etc.: siempre filtran por `auth()->user()->tenant_id` (y anidación correcta site → location). Si el registro no pertenece al tenant actual → **404**, no 403, para no filtrar existencia de IDs ajenos.
+
+---
+
+## Permisos (`CxpPermission`)
+
+- Enum único: `app/Domain/Shared/Enums/CxpPermission.php`.
+- Valores string = nombres en tabla `permissions` (guard `sanctum`).
+- **Seed global**: `Database\Seeders\RolePermissionSeeder` crea todos los permisos listados en `CxpPermission::allSeederPermissionValues()`.
+- **Nuevo tenant**: `BootstrapTenantDefaultRolesAction` crea roles `owner`, `admin`, `user` y sincroniza permisos según `tenantRoleCatalog()`, `defaultAdminRolePermissions()` y `defaultUserRolePermissions()`.
+
+Para añadir un permiso nuevo al catálogo tenant:
+
+1. Añade el `case` al enum.
+2. Inclúyelo en `tenantRoleCatalog()` (y en los subconjuntos de roles que correspondan).
+3. Ejecuta migraciones/seed en entornos que lo necesiten (o `Permission::firstOrCreate` en un seeder incremental).
+
+---
+
+## Cómo arrancar en local
+
+Requisitos: PHP 8.3+, Composer, base de datos (MySQL/PostgreSQL/SQLite).
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed   # o al menos RolePermissionSeeder según tu DatabaseSeeder
+php artisan serve
+```
+
+Con **Laravel Sail** (recomendado si usas Docker):
+
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan test
+```
+
+---
+
+## Tests
+
+Los tests de API usan **SQLite en memoria** (`phpunit.xml`) y `RefreshDatabase` + `RolePermissionSeeder` en `ApiV1TestCase`.
+
+```bash
+php artisan test
+# o
+./vendor/bin/phpunit
+# con Sail:
+./vendor/bin/sail artisan test
+```
+
+### Cobertura orientativa (`tests/Feature/Api/V1/`)
+
+| Archivo | Qué cubre |
+|---------|-----------|
+| `AuthLoginTest` | Login, Sanctum, tenant inactivo |
+| `LandlordHealthTest`, `LandlordTenantApiTest`, `LandlordTenantUserApiTest` | Panel plataforma |
+| `TenantProfileApiTest` | Perfil tenant + middleware |
+| `TenantPermissionsCatalogTest` | Catálogo de permisos |
+| `TenantRolesApiTest` | CRUD roles tenant |
+| `TenantUsersApiTest` | Listado usuarios, sync roles |
+| `TenantGroupsApiTest` | CRUD grupos + aislamiento entre tenants |
+| `TenantSitesAndLocationsApiTest` | Sites/locations, `group_id`, geo, validación |
+
+Añade tests nuevos junto al mismo prefijo cuando incorpores endpoints v1.
+
+---
+
+## Estructura de código (orientación)
+
+- **`app/Domain/`**: acciones, servicios, repositorios de dominio (tenant, landlord compartido donde aplique).
+- **`app/Http/Controllers/Api/V1/`**: capa HTTP fina; validación en `FormRequest`; permisos en constructor del controlador con `CxpPermission`.
+- **`app/Domain/Shared/Data/Api/V1/`**: DTOs de respuesta (`*Data`).
+
+---
+
+## Frontends y BFF
+
+Este repositorio es solo el backend. Un cliente (por ejemplo Next.js) puede actuar como **BFF**: cookie httpOnly + proxy a Laravel. Los tests aquí no sustituyen contratos E2E en el cliente.
+
+---
+
+## Licencia
+
+El esqueleto Laravel y las dependencias conservan sus licencias (p. ej. MIT). El código de dominio específico del proyecto queda bajo la licencia que definas en tu organización.

@@ -166,6 +166,49 @@ final class TenantSitesAndLocationsApiTest extends ApiV1TestCase
             ->assertNotFound();
     }
 
+    public function test_location_create_rejects_invalid_latitude(): void
+    {
+        $tenant = $this->createTenant();
+        $owner = $this->createTenantUser($tenant, 'owner');
+
+        $siteId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites'), ['name' => 'S1', 'is_active' => true])
+            ->json('data.id');
+
+        $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites/'.$siteId.'/locations'), [
+                'name' => 'Bad geo',
+                'latitude' => 91,
+                'is_active' => true,
+            ])
+            ->assertUnprocessable();
+    }
+
+    public function test_site_patch_can_clear_group_id(): void
+    {
+        $tenant = $this->createTenant();
+        $owner = $this->createTenantUser($tenant, 'owner');
+
+        $groupId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), ['name' => 'G1', 'is_active' => true])
+            ->json('data.id');
+
+        $siteId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites'), [
+                'name' => 'With group',
+                'group_id' => (int) $groupId,
+                'is_active' => true,
+            ])
+            ->assertCreated()
+            ->json('data.id');
+
+        $this->actingAsTenant($owner)
+            ->patchJson($this->v1('sites/'.$siteId), ['group_id' => null])
+            ->assertOk()
+            ->assertJsonPath('data.group_id', null)
+            ->assertJsonPath('data.group', null);
+    }
+
     public function test_owner_cannot_assign_foreign_group_to_site(): void
     {
         $tenantA = $this->createTenant();
