@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
+use App\Domain\Shared\Data\Api\V1\TenantProfileData;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\TenantResource;
-use App\Http\Resources\Api\V1\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,11 +16,10 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->load(['roles', 'tenant']);
 
+        $payload = TenantProfileData::fromContext(tenant(), $user);
+
         return response()->json([
-            'data' => [
-                'tenant' => new TenantResource(tenant()),
-                'user' => new UserResource($user),
-            ],
+            'data' => $payload->toArray(),
         ]);
     }
 }

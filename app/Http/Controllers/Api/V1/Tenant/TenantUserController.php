@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
+use App\Domain\Shared\Data\Api\V1\ApiV1PaginatedResponse;
+use App\Domain\Shared\Data\Api\V1\UserData;
 use App\Domain\Shared\Enums\CxpPermission;
 use App\Domain\Tenant\Services\TenantMemberService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Tenant\SyncTenantUserRolesRequest;
-use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,14 +29,18 @@ class TenantUserController extends Controller
         $page = $members->paginateUsers($perPage, $request->user()->id);
         $page->load(['roles']);
 
-        return UserResource::collection($page)->response();
+        return response()->json(
+            ApiV1PaginatedResponse::fromPaginator($page, static fn (User $user) => UserData::fromUser($user)->toArray()),
+        );
     }
 
-    public function show(User $tenantUser): UserResource
+    public function show(User $tenantUser): JsonResponse
     {
         $tenantUser->load(['roles']);
 
-        return new UserResource($tenantUser);
+        return response()->json([
+            'data' => UserData::fromUser($tenantUser)->toArray(),
+        ]);
     }
 
     public function syncRoles(SyncTenantUserRolesRequest $request, User $tenantUser, TenantMemberService $members): JsonResponse
@@ -43,7 +48,7 @@ class TenantUserController extends Controller
         $user = $members->syncRoles($tenantUser, $request->validated('roles'));
 
         return response()->json([
-            'data' => new UserResource($user),
+            'data' => UserData::fromUser($user)->toArray(),
         ], Response::HTTP_OK);
     }
 }

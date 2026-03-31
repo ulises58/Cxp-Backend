@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Landlord;
 
 use App\Domain\Landlord\Services\TenantService;
+use App\Domain\Shared\Data\Api\V1\ApiV1PaginatedResponse;
+use App\Domain\Shared\Data\Api\V1\TenantData;
 use App\Domain\Shared\Enums\CxpPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Landlord\StoreTenantRequest;
 use App\Http\Requests\Api\V1\Landlord\UpdateTenantRequest;
-use App\Http\Resources\Api\V1\TenantResource;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,8 +30,11 @@ class TenantController extends Controller
     public function index(Request $request, TenantService $tenants): JsonResponse
     {
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
+        $page = $tenants->paginate($perPage);
 
-        return TenantResource::collection($tenants->paginate($perPage))->response();
+        return response()->json(
+            ApiV1PaginatedResponse::fromPaginator($page, static fn (Tenant $t) => TenantData::fromTenant($t)->toArray()),
+        );
     }
 
     public function store(StoreTenantRequest $request, TenantService $tenants): JsonResponse
@@ -42,17 +46,19 @@ class TenantController extends Controller
             (bool) ($validated['is_active'] ?? true),
         );
 
-        return (new TenantResource($tenant))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'data' => TenantData::fromTenant($tenant)->toArray(),
+        ], Response::HTTP_CREATED);
     }
 
-    public function show(Tenant $tenant): TenantResource
+    public function show(Tenant $tenant): JsonResponse
     {
-        return new TenantResource($tenant);
+        return response()->json([
+            'data' => TenantData::fromTenant($tenant)->toArray(),
+        ]);
     }
 
-    public function update(UpdateTenantRequest $request, Tenant $tenant, TenantService $tenants): TenantResource
+    public function update(UpdateTenantRequest $request, Tenant $tenant, TenantService $tenants): JsonResponse
     {
         $validated = $request->validated();
         $slug = $validated['slug'] ?? $tenant->slug;
@@ -63,7 +69,9 @@ class TenantController extends Controller
 
         $tenant = $tenants->update($tenant, $slug, $name, $isActive);
 
-        return new TenantResource($tenant);
+        return response()->json([
+            'data' => TenantData::fromTenant($tenant)->toArray(),
+        ]);
     }
 
     public function destroy(Tenant $tenant, TenantService $tenants): Response

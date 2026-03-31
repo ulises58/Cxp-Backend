@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Landlord;
 
 use App\Domain\Landlord\Services\LandlordTenantUserService;
+use App\Domain\Shared\Data\Api\V1\ApiV1PaginatedResponse;
+use App\Domain\Shared\Data\Api\V1\LandlordRoleOptionData;
+use App\Domain\Shared\Data\Api\V1\UserData;
 use App\Domain\Shared\Enums\CxpPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Landlord\StoreLandlordTenantUserRequest;
-use App\Http\Resources\Api\V1\UserResource;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -30,12 +33,10 @@ class LandlordTenantUserController extends Controller
     public function roles(Tenant $tenant, LandlordTenantUserService $users): JsonResponse
     {
         $roles = $users->roleSummariesForTenant($tenant);
+        $data = $roles->map(static fn (Role $role) => LandlordRoleOptionData::fromRole($role)->toArray())->values()->all();
 
         return response()->json([
-            'data' => $roles->map(static fn (Role $role): array => [
-                'id' => $role->id,
-                'name' => $role->name,
-            ])->values()->all(),
+            'data' => $data,
         ]);
     }
 
@@ -45,7 +46,9 @@ class LandlordTenantUserController extends Controller
         $page = $users->paginateForTenant($tenant, $perPage);
         $page->load(['roles']);
 
-        return UserResource::collection($page)->response();
+        return response()->json(
+            ApiV1PaginatedResponse::fromPaginator($page, static fn (User $user) => UserData::fromUser($user)->toArray()),
+        );
     }
 
     public function store(
@@ -63,7 +66,7 @@ class LandlordTenantUserController extends Controller
         );
 
         return response()->json([
-            'data' => new UserResource($user),
+            'data' => UserData::fromUser($user)->toArray(),
         ], Response::HTTP_CREATED);
     }
 }

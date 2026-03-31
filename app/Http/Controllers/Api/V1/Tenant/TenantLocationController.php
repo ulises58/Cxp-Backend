@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
+use App\Domain\Shared\Data\Api\V1\ApiV1PaginatedResponse;
+use App\Domain\Shared\Data\Api\V1\LocationData;
 use App\Domain\Shared\Enums\CxpPermission;
 use App\Domain\Tenant\Services\TenantLocationService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Tenant\StoreTenantLocationRequest;
 use App\Http\Requests\Api\V1\Tenant\UpdateTenantLocationRequest;
-use App\Http\Resources\Api\V1\LocationResource;
 use App\Models\Location;
 use App\Models\Site;
 use Illuminate\Http\JsonResponse;
@@ -32,7 +33,9 @@ class TenantLocationController extends Controller
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
         $page = $locations->paginateForSite($tenantSite, $perPage);
 
-        return LocationResource::collection($page)->response();
+        return response()->json(
+            ApiV1PaginatedResponse::fromPaginator($page, static fn (Location $loc) => LocationData::fromLocation($loc)->toArray()),
+        );
     }
 
     public function store(StoreTenantLocationRequest $request, Site $tenantSite, TenantLocationService $locations): JsonResponse
@@ -46,14 +49,16 @@ class TenantLocationController extends Controller
             (bool) ($validated['is_active'] ?? true),
         );
 
-        return (new LocationResource($location))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'data' => LocationData::fromLocation($location)->toArray(),
+        ], Response::HTTP_CREATED);
     }
 
-    public function show(Site $tenantSite, Location $tenantLocation): LocationResource
+    public function show(Site $tenantSite, Location $tenantLocation): JsonResponse
     {
-        return new LocationResource($tenantLocation);
+        return response()->json([
+            'data' => LocationData::fromLocation($tenantLocation)->toArray(),
+        ]);
     }
 
     public function update(
@@ -61,7 +66,7 @@ class TenantLocationController extends Controller
         Site $tenantSite,
         Location $tenantLocation,
         TenantLocationService $locations,
-    ): LocationResource {
+    ): JsonResponse {
         $validated = $request->validated();
         $description = array_key_exists('description', $validated)
             ? $validated['description']
@@ -80,7 +85,9 @@ class TenantLocationController extends Controller
                 : $tenantLocation->is_active,
         );
 
-        return new LocationResource($location);
+        return response()->json([
+            'data' => LocationData::fromLocation($location)->toArray(),
+        ]);
     }
 
     public function destroy(Site $tenantSite, Location $tenantLocation, TenantLocationService $locations): Response

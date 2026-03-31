@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
+use App\Domain\Shared\Data\Api\V1\TenantRoleData;
 use App\Domain\Shared\Enums\CxpPermission;
 use App\Domain\Tenant\Services\TenantRoleService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Tenant\StoreTenantRoleRequest;
 use App\Http\Requests\Api\V1\Tenant\UpdateTenantRoleRequest;
-use App\Http\Resources\Api\V1\TenantRoleResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Spatie\Permission\Models\Role;
@@ -24,17 +24,20 @@ class TenantRoleController extends Controller
     public function index(TenantRoleService $roles): JsonResponse
     {
         $list = $roles->listRoles()->load('permissions');
+        $data = $list->map(static fn (Role $role) => TenantRoleData::fromRole($role)->toArray())->values()->all();
 
         return response()->json([
-            'data' => TenantRoleResource::collection($list),
+            'data' => $data,
         ]);
     }
 
-    public function show(Role $tenantRole): TenantRoleResource
+    public function show(Role $tenantRole): JsonResponse
     {
         $tenantRole->load('permissions');
 
-        return new TenantRoleResource($tenantRole);
+        return response()->json([
+            'data' => TenantRoleData::fromRole($tenantRole)->toArray(),
+        ]);
     }
 
     public function store(StoreTenantRoleRequest $request, TenantRoleService $roles): JsonResponse
@@ -42,12 +45,12 @@ class TenantRoleController extends Controller
         $validated = $request->validated();
         $role = $roles->create($validated['name'], $validated['permissions']);
 
-        return (new TenantRoleResource($role))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'data' => TenantRoleData::fromRole($role)->toArray(),
+        ], Response::HTTP_CREATED);
     }
 
-    public function update(UpdateTenantRoleRequest $request, Role $tenantRole, TenantRoleService $roles): TenantRoleResource
+    public function update(UpdateTenantRoleRequest $request, Role $tenantRole, TenantRoleService $roles): JsonResponse
     {
         $validated = $request->validated();
         $permissionNames = array_key_exists('permissions', $validated)
@@ -57,7 +60,9 @@ class TenantRoleController extends Controller
 
         $role = $roles->update($tenantRole, $name, $permissionNames);
 
-        return new TenantRoleResource($role);
+        return response()->json([
+            'data' => TenantRoleData::fromRole($role)->toArray(),
+        ]);
     }
 
     public function destroy(Role $tenantRole, TenantRoleService $roles): Response

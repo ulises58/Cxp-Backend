@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Domain\Auth\Actions\AuthenticateUserWithPasswordAction;
+use App\Domain\Shared\Data\Api\V1\TenantData;
+use App\Domain\Shared\Data\Api\V1\UserData;
 use App\Domain\Shared\Data\Auth\LoginSuccessData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
-use App\Http\Resources\Api\V1\TenantResource;
-use App\Http\Resources\Api\V1\UserResource;
 use Illuminate\Http\JsonResponse;
 
 class LoginController extends Controller
@@ -39,15 +39,13 @@ class LoginController extends Controller
 
         $token = $user->createToken('api')->plainTextToken;
 
-        $payload = LoginSuccessData::from([
-            'token' => $token,
-            'token_type' => 'Bearer',
-            'user' => (new UserResource($user))->resolve(),
-            'tenant' => $user->tenant_id
-                ? (new TenantResource($user->tenant))->resolve()
-                : null,
-            'context' => $user->isLandlordStaff() ? 'landlord' : 'tenant',
-        ]);
+        $payload = new LoginSuccessData(
+            token: $token,
+            token_type: 'Bearer',
+            user: UserData::fromUser($user),
+            tenant: $user->tenant !== null ? TenantData::fromTenant($user->tenant) : null,
+            context: $user->isLandlordStaff() ? 'landlord' : 'tenant',
+        );
 
         return response()->json([
             'data' => $payload->toArray(),

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Tenant;
 
+use App\Domain\Shared\Data\Api\V1\ApiV1PaginatedResponse;
+use App\Domain\Shared\Data\Api\V1\SiteData;
 use App\Domain\Shared\Enums\CxpPermission;
 use App\Domain\Tenant\Services\TenantSiteService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Tenant\StoreTenantSiteRequest;
 use App\Http\Requests\Api\V1\Tenant\UpdateTenantSiteRequest;
-use App\Http\Resources\Api\V1\SiteResource;
 use App\Models\Site;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,9 @@ class TenantSiteController extends Controller
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
         $page = $sites->paginate($perPage);
 
-        return SiteResource::collection($page)->response();
+        return response()->json(
+            ApiV1PaginatedResponse::fromPaginator($page, static fn (Site $site) => SiteData::fromSite($site)->toArray()),
+        );
     }
 
     public function store(StoreTenantSiteRequest $request, TenantSiteService $sites): JsonResponse
@@ -43,17 +46,19 @@ class TenantSiteController extends Controller
             (bool) ($validated['is_active'] ?? true),
         );
 
-        return (new SiteResource($site))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'data' => SiteData::fromSite($site)->toArray(),
+        ], Response::HTTP_CREATED);
     }
 
-    public function show(Site $tenantSite): SiteResource
+    public function show(Site $tenantSite): JsonResponse
     {
-        return new SiteResource($tenantSite);
+        return response()->json([
+            'data' => SiteData::fromSite($tenantSite)->toArray(),
+        ]);
     }
 
-    public function update(UpdateTenantSiteRequest $request, Site $tenantSite, TenantSiteService $sites): SiteResource
+    public function update(UpdateTenantSiteRequest $request, Site $tenantSite, TenantSiteService $sites): JsonResponse
     {
         $validated = $request->validated();
         $description = array_key_exists('description', $validated)
@@ -69,7 +74,9 @@ class TenantSiteController extends Controller
                 : $tenantSite->is_active,
         );
 
-        return new SiteResource($site);
+        return response()->json([
+            'data' => SiteData::fromSite($site)->toArray(),
+        ]);
     }
 
     public function destroy(Site $tenantSite, TenantSiteService $sites): Response
