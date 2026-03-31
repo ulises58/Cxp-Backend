@@ -7,6 +7,7 @@ namespace App\Domain\Tenant\Services;
 use App\Domain\Tenant\Actions\CreateTenantRoleAction;
 use App\Domain\Tenant\Actions\DeleteTenantRoleAction;
 use App\Domain\Tenant\Actions\UpdateTenantRoleAction;
+use App\Domain\Tenant\Repositories\TenantTeamRoleRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Spatie\Permission\Models\Role;
 
@@ -16,6 +17,7 @@ final class TenantRoleService
         private readonly CreateTenantRoleAction $createRole,
         private readonly UpdateTenantRoleAction $updateRole,
         private readonly DeleteTenantRoleAction $deleteRole,
+        private readonly TenantTeamRoleRepository $tenantRoles,
     ) {}
 
     /**
@@ -23,11 +25,7 @@ final class TenantRoleService
      */
     public function listRoles(): Collection
     {
-        return Role::query()
-            ->where('guard_name', 'sanctum')
-            ->where('tenant_id', getPermissionsTeamId())
-            ->orderBy('name')
-            ->get();
+        return $this->tenantRoles->listOrderedForTeam(getPermissionsTeamId());
     }
 
     /**

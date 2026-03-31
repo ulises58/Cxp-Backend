@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Services;
 
-use App\Domain\Shared\Enums\CxpPermission;
+use App\Domain\Tenant\Repositories\TenantPermissionCatalogRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Spatie\Permission\Models\Permission;
 
 final class TenantPermissionCatalog
 {
+    public function __construct(
+        private readonly TenantPermissionCatalogRepository $permissions,
+    ) {}
+
     /**
      * Permisos que un tenant puede asignar a sus roles (catálogo global acotado).
      *
@@ -17,10 +21,6 @@ final class TenantPermissionCatalog
      */
     public function all(): Collection
     {
-        return Permission::query()
-            ->where('guard_name', 'sanctum')
-            ->whereIn('name', CxpPermission::tenantRoleCatalogValues())
-            ->orderBy('name')
-            ->get();
+        return $this->permissions->assignableForTenantRoles();
     }
 }

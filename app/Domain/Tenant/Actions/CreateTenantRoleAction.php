@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Actions;
 
-use App\Domain\Tenant\Concerns\AssertsTenantRoleRules;
+use App\Domain\Tenant\Support\TenantTeamRoleGuard;
 use App\Domain\Tenant\TenantCatalogPermissionResolver;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Exceptions\RoleAlreadyExists;
@@ -13,10 +13,9 @@ use Spatie\Permission\PermissionRegistrar;
 
 final class CreateTenantRoleAction
 {
-    use AssertsTenantRoleRules;
-
     public function __construct(
         private readonly TenantCatalogPermissionResolver $catalogPermissions,
+        private readonly TenantTeamRoleGuard $roleGuard,
     ) {}
 
     /**
@@ -24,8 +23,8 @@ final class CreateTenantRoleAction
      */
     public function __invoke(string $name, array $permissionNames): Role
     {
-        $this->assertCustomRoleName($name);
-        $this->assertNameAvailableInTeam($name);
+        $this->roleGuard->assertCustomRoleName($name);
+        $this->roleGuard->assertNameAvailableInTeam($name);
 
         $permissions = $this->catalogPermissions->resolve($permissionNames);
 

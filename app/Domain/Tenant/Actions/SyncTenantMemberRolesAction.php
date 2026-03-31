@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Actions;
 
+use App\Domain\Tenant\Repositories\TenantTeamRoleRepository;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 final class SyncTenantMemberRolesAction
 {
+    public function __construct(
+        private readonly TenantTeamRoleRepository $tenantRoles,
+    ) {}
+
     /**
      * @param  array<int, string>  $roleNames
      */
@@ -27,11 +31,7 @@ final class SyncTenantMemberRolesAction
             ]);
         }
 
-        $roles = Role::query()
-            ->where('guard_name', 'sanctum')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('name', $roleNames)
-            ->get();
+        $roles = $this->tenantRoles->allNamedForTeam($roleNames, $tenantId);
 
         if ($roles->count() !== count(array_unique($roleNames))) {
             throw ValidationException::withMessages([

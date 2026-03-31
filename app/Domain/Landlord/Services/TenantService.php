@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Landlord\Services;
 
+use App\Domain\Landlord\Repositories\TenantAggregateRepository;
 use App\Domain\Tenant\Actions\BootstrapTenantDefaultRolesAction;
 use App\Models\Tenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -12,22 +13,17 @@ final class TenantService
 {
     public function __construct(
         private readonly BootstrapTenantDefaultRolesAction $bootstrapDefaultRoles,
+        private readonly TenantAggregateRepository $tenants,
     ) {}
 
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        return Tenant::query()
-            ->orderBy('slug')
-            ->paginate($perPage);
+        return $this->tenants->paginateOrderedBySlug($perPage);
     }
 
     public function create(string $slug, ?string $name, bool $isActive = true): Tenant
     {
-        $tenant = Tenant::query()->create([
-            'slug' => $slug,
-            'name' => $name,
-            'is_active' => $isActive,
-        ]);
+        $tenant = $this->tenants->create($slug, $name, $isActive);
 
         ($this->bootstrapDefaultRoles)($tenant);
 
@@ -39,13 +35,12 @@ final class TenantService
         $tenant->slug = $slug;
         $tenant->name = $name;
         $tenant->is_active = $isActive;
-        $tenant->save();
 
-        return $tenant->refresh();
+        return $this->tenants->save($tenant);
     }
 
     public function delete(Tenant $tenant): void
     {
-        $tenant->delete();
+        $this->tenants->delete($tenant);
     }
 }

@@ -27,13 +27,9 @@ class LandlordTenantUserController extends Controller
         ))->only(['roles']);
     }
 
-    public function roles(Tenant $tenant): JsonResponse
+    public function roles(Tenant $tenant, LandlordTenantUserService $users): JsonResponse
     {
-        $roles = Role::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('guard_name', 'sanctum')
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $roles = $users->roleSummariesForTenant($tenant);
 
         return response()->json([
             'data' => $roles->map(static fn (Role $role): array => [

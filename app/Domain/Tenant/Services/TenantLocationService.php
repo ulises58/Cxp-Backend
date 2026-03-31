@@ -4,21 +4,28 @@ declare(strict_types=1);
 
 namespace App\Domain\Tenant\Services;
 
+use App\Domain\Tenant\Repositories\LocationRepository;
+use App\Domain\Tenant\Repositories\SiteRepository;
 use App\Models\Location;
 use App\Models\Site;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class TenantLocationService
 {
+    public function __construct(
+        private readonly LocationRepository $locations,
+        private readonly SiteRepository $sites,
+    ) {}
+
     public function paginateForSite(Site $site, int $perPage): LengthAwarePaginator
     {
         $this->assertSameTenant($site);
 
-        return Location::query()
-            ->where('site_id', $site->id)
-            ->where('tenant_id', $this->tenantId())
-            ->orderBy('name')
-            ->paginate($perPage);
+        return $this->locations->paginateForSiteAndTenant(
+            (int) $site->id,
+            $this->tenantId(),
+            $perPage,
+        );
     }
 
     public function create(
@@ -30,7 +37,7 @@ final class TenantLocationService
     ): Location {
         $this->assertSameTenant($site);
 
-        return Location::query()->create([
+        return $this->locations->create([
             'tenant_id' => $this->tenantId(),
             'site_id' => $site->id,
             'name' => $name,
@@ -66,15 +73,18 @@ final class TenantLocationService
 
     private function assertSameTenant(Site|Location $model): void
     {
-        if ((string) $model->tenant_id !== (string) $this->tenantId()) {
+        $tenantId = $this->tenantId();
+        $ok = $model instanceof Site
+            ? $this->sites->belongsToTenant($model, $tenantId)
+            : $this->locations->belongsToTenant($model, $tenantId);
+
+        if (! $ok) {
             abort(404);
         }
     }
 
     private function tenantId(): string
     {
-        $id = getPermissionsTeamId();
-
-        return (string) $id;
+        return (string) getPermissionsTeamId();
     }
 }
