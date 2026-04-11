@@ -89,25 +89,102 @@ Para añadir un permiso nuevo al catálogo tenant:
 
 ---
 
-## Cómo arrancar en local
+## Crear un proyecto nuevo (igual que `composer create-project laravel/laravel`)
 
-Requisitos: PHP 8.3+, Composer, base de datos (MySQL/PostgreSQL/SQLite).
+Paquete Composer: **`cxp/cxp-backend`**. Tras instalar, se ejecuta el mismo tipo de arranque que el esqueleto de Laravel: `.env`, `key:generate`, SQLite, `migrate` y **`db:seed`** (permisos + demo local).
+
+### Si publicas el repo en GitHub (sin Packagist)
+
+Sustituye la URL por la de **tu** repositorio y la rama por defecto (`main` → restricción `dev-main` en Composer):
 
 ```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan db:seed   # o al menos RolePermissionSeeder según tu DatabaseSeeder
-php artisan serve
+composer create-project cxp/cxp-backend:dev-main mi-saas \
+  --repository='{"type":"vcs","url":"https://github.com/TU-USUARIO/Cxp-Backend.git"}' \
+  --remove-vcs
+cd mi-saas
 ```
 
-Con **Laravel Sail** (recomendado si usas Docker):
+### Cuando lo publiques en [Packagist](https://packagist.org)
+
+Quedará el flujo habitual, sin `--repository`:
 
 ```bash
-./vendor/bin/sail up -d
-./vendor/bin/sail artisan migrate
-./vendor/bin/sail artisan test
+composer create-project cxp/cxp-backend mi-saas
+cd mi-saas
+```
+
+### Como `curl "https://laravel.build/example-app" | bash` (recomendado)
+
+En `laravel.build` el nombre va en la **ruta** (`/example-app`) porque el servidor genera el script al vuelo. En GitHub solo puedes servir un fichero estático, así que el nombre se pasa a **bash**: `bash -s example-app` (mismo efecto).
+
+Solo necesitas **Docker** en el host (Composer se ejecuta dentro de `laravelsail/php85-composer`, igual que `laravel.build`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/build/install.sh | bash -s example-app
+```
+
+Eso crea la carpeta `example-app`, ejecuta `composer create-project`, copia **`.env.sail.example`**, `sail pull` + `sail build`, **`sail up -d`**, `migrate` y `db:seed` en MySQL, y ajusta permisos. Al terminar el stack suele estar ya en marcha.
+
+Variables opcionales (mismo patrón que Laravel con env):
+
+```bash
+export CXP_REPO_URL='https://github.com/org/mi-fork.git'
+curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/build/install.sh | bash -s mi-saas
+```
+
+Si **`cxp/cxp-backend`** ya está en Packagist: `export CXP_PACKAGIST=1` antes del `curl`.
+
+### `curl` con Composer en tu máquina (sin imagen de Composer)
+
+Requiere PHP + Composer instalados localmente:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/bin/new-cxp-project.sh | bash -s mi-saas
+```
+
+### Arrancar el código generado
+
+- Tras **`build/install.sh`**: revisa que el stack siga arriba (`./vendor/bin/sail ps`); si lo paraste, `cd tu-proyecto && ./vendor/bin/sail up -d`.
+- Tras **`bin/new-cxp-project.sh`** o **`composer create-project`** sin Docker: **`composer run docker-setup`** para MySQL/Mailpit, o **`php artisan serve`** usando el SQLite del `post-create-project`.
+
+### Trabajar en el propio template (este repositorio)
+
+Si vas a **desarrollar** la base, clónala y usa `composer install` aquí; el flujo `create-project` es para **generar copias** nuevas del proyecto.
+
+```bash
+git clone https://github.com/TU-USUARIO/Cxp-Backend.git && cd Cxp-Backend
+composer install
+```
+
+Probar `create-project` desde una copia local sin subir a Git:
+
+```bash
+composer create-project cxp/cxp-backend:dev-main /tmp/prueba-cxp \
+  --repository='{"type":"path","url":"/ruta/absoluta/a/Cxp-Backend"}' \
+  --remove-vcs
+```
+
+(Ajusta la ruta `path` al directorio donde tengas este código.)
+
+---
+
+## Docker en detalle (`compose.yaml` / Sail)
+
+Requisitos en el host: **Docker** (Compose v2), **PHP 8.3+** y **Composer** para el primer `composer install` / `key:generate` antes de levantar contenedores.
+
+- **`composer run docker-setup`** o **`bash scripts/setup-docker.sh`**: `build`, `up -d`, migraciones y seed con Sail (usa **`.env.sail.example`** si no existe `.env`).
+- Parar: `./vendor/bin/sail down`.
+
+El stack incluye PHP (runtime Sail), MySQL 8.4, Redis, Mailpit, Meilisearch y Selenium (`depends_on` como en el stub de Sail).
+
+---
+
+## Sin Docker (solo PHP + SQLite)
+
+Útil si ya generaste el proyecto con `create-project` (viene con SQLite en `.env`) o para alinear con **tests** (`phpunit.xml` usa SQLite en memoria).
+
+```bash
+php artisan serve
 ```
 
 ---
@@ -120,7 +197,7 @@ Los tests de API usan **SQLite en memoria** (`phpunit.xml`) y `RefreshDatabase` 
 php artisan test
 # o
 ./vendor/bin/phpunit
-# con Sail:
+# con Sail (misma suite; PHPUnit sigue usando SQLite en memoria según phpunit.xml):
 ./vendor/bin/sail artisan test
 ```
 
