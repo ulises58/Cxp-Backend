@@ -91,7 +91,7 @@ Para añadir un permiso nuevo al catálogo tenant:
 
 ## Crear un proyecto nuevo (igual que `composer create-project laravel/laravel`)
 
-Paquete Composer: **`cxp/cxp-backend`**. Tras instalar, se ejecuta el mismo tipo de arranque que el esqueleto de Laravel: `.env`, `key:generate`, SQLite, `migrate` y **`db:seed`** (permisos + demo local).
+Paquete Composer: **`cxp/cxp-backend`**. Tras `create-project`: `.env`, **`key:generate`** y fichero SQLite vacío (sin migraciones ni seed automáticos; tú ejecutas `migrate` / `db:seed` cuando quieras).
 
 ### Si publicas el repo en GitHub (sin Packagist)
 
@@ -123,7 +123,7 @@ Solo necesitas **Docker** en el host (Composer corre en **`laravelsail/php84-com
 curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/build/install.sh | bash -s example-app
 ```
 
-Eso crea la carpeta `example-app`, ejecuta `composer create-project`, copia **`.env.sail.example`**, `sail pull` + `sail build`, **`sail up -d`**, `migrate` y `db:seed` en MySQL, y ajusta permisos. Al terminar el stack suele estar ya en marcha.
+Eso solo crea la carpeta y ejecuta **`composer create-project`** dentro de Docker (dependencias PHP) y ajusta permisos. **No** levanta Sail ni migra; lo haces tú cuando quieras (como un Laravel normal).
 
 Variables opcionales (mismo patrón que Laravel con env):
 
@@ -144,8 +144,10 @@ curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/bin/new-c
 
 ### Arrancar el código generado
 
-- Tras **`build/install.sh`**: revisa que el stack siga arriba (`./vendor/bin/sail ps`); si lo paraste, `cd tu-proyecto && ./vendor/bin/sail up -d`.
-- Tras **`bin/new-cxp-project.sh`** o **`composer create-project`** sin Docker: **`composer run docker-setup`** para MySQL/Mailpit, o **`php artisan serve`** usando el SQLite del `post-create-project`.
+1. Entra en el proyecto: `cd mi-saas`
+2. **Sail:** `cp .env.sail.example .env`, `php artisan key:generate`, `./vendor/bin/sail up -d`, luego `./vendor/bin/sail artisan migrate` (y `db:seed` si quieres).
+3. **Atajo** que sí levanta Docker + migrate + seed: **`composer run docker-setup`** (o `bash scripts/setup-docker.sh`).
+4. **Solo SQLite / `php artisan serve`:** `php artisan migrate` y `php artisan db:seed` cuando toque.
 
 ### Trabajar en el propio template (este repositorio)
 

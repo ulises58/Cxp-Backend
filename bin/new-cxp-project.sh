@@ -42,8 +42,8 @@ composer create-project "cxp/cxp-backend:${CXP_VERSION}" "${NAME}" \
 
 echo ""
 echo "Proyecto creado en ./${NAME}"
-echo "Siguiente paso (Docker + Sail):"
-echo "  cd ${NAME} && composer run docker-setup"
+echo "Sail (cuando quieras):"
+echo "  cd ${NAME} && cp .env.sail.example .env && php artisan key:generate && ./vendor/bin/sail up -d && ./vendor/bin/sail artisan migrate"
+echo "Atajo con migrate/seed: cd ${NAME} && composer run docker-setup"
 echo ""
-echo "O en local con SQLite:"
-echo "  cd ${NAME} && php artisan serve"
+echo "SQLite / serve: cd ${NAME} && php artisan migrate && php artisan serve"

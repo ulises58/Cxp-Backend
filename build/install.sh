@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
-# Instalador estilo https://laravel.build/nombre-app — solo necesitas Docker (Composer va dentro del contenedor).
+# Instalador tipo laravel.build: solo crea el proyecto con Composer dentro de Docker (sin migraciones ni Sail automático).
 #
 # Uso:
 #   curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/build/install.sh | bash -s example-app
 #
-# Variables opcionales (antes del curl o en la misma línea):
-#   CXP_REPO_URL       URL git (https o git@...), por defecto placeholder
-#   CXP_VERSION        p.ej. dev-main
-#   CXP_PACKAGIST=1    si ya publicaste cxp/cxp-backend en Packagist (no usa --repository)
-#   CXP_COMPOSER_IMAGE  PHP+Composer (por defecto laravelsail/php84-composer:latest; php85-composer no está en Hub).
-#       Alternativa: export CXP_COMPOSER_IMAGE=composer:2
+# Variables opcionales:
+#   CXP_REPO_URL, CXP_VERSION, CXP_PACKAGIST=1, CXP_COMPOSER_IMAGE
 #
 set -euo pipefail
 
@@ -32,7 +28,6 @@ docker info > /dev/null 2>&1 || {
 
 : "${CXP_REPO_URL:=https://github.com/ulises58/Cxp-Backend.git}"
 : "${CXP_VERSION:=dev-main}"
-# php85-composer puede fallar al hacer pull; php84-composer está publicada y cumple PHP ^8.3 del proyecto.
 COMPOSER_IMG="${CXP_COMPOSER_IMAGE:-laravelsail/php84-composer:latest}"
 
 run_create_project() {
@@ -66,26 +61,6 @@ run_create_project
 
 cd "${NAME}"
 
-# El post-create deja .env con SQLite; para el mismo stack que laravel.build (MySQL en Sail) usamos la plantilla Sail.
-if [[ -f .env.sail.example ]]; then
-  echo "→ .env para Sail (MySQL, Redis, Mailpit…)"
-  docker run --rm -v "$(pwd)":/opt -w /opt \
-    -e COMPOSER_ALLOW_SUPERUSER=1 \
-    "${COMPOSER_IMG}" \
-    bash -ec "cp .env.sail.example .env && php artisan key:generate --force --ansi"
-fi
-
-echo "→ sail pull + build (imágenes de servicios)"
-./vendor/bin/sail pull mysql redis meilisearch mailpit selenium
-./vendor/bin/sail build
-
-echo "→ sail up + migrate + seed (MySQL)"
-./vendor/bin/sail up -d
-# Breve espera a que MySQL acepte conexiones (mismo patrón que un primer sail artisan)
-sleep 10
-./vendor/bin/sail artisan migrate --force --ansi
-./vendor/bin/sail artisan db:seed --force --ansi
-
 CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
@@ -101,7 +76,7 @@ fix_perms() {
       sudo chown -R "$(id -un)": .
     fi
   else
-    echo "Aviso: no hay sudo/doas; si ves permisos raros, ejecuta: chown -R \$(whoami) . dentro de ${NAME}" >&2
+    echo "Aviso: no hay sudo/doas; si ves permisos raros: chown -R \$(whoami) . dentro de ${NAME}" >&2
   fi
 }
 
@@ -109,7 +84,13 @@ echo ""
 fix_perms
 
 echo ""
-echo -e "${CYAN}${BOLD}Listo.${NC} El stack ya está arriba (${BOLD}sail up -d${NC})."
-echo -e "Para parar: ${BOLD}cd ${NAME} && ./vendor/bin/sail down${NC}"
+echo -e "${CYAN}${BOLD}Proyecto creado.${NC} Las migraciones y el seed no se ejecutan solos."
 echo ""
-echo "API (por defecto): http://localhost   ·   Mailpit: http://localhost:8025"
+echo -e "Con ${BOLD}Sail${NC} (MySQL, etc.):"
+echo -e "  ${BOLD}cp .env.sail.example .env && php artisan key:generate${NC}"
+echo -e "  ${BOLD}./vendor/bin/sail up -d${NC}"
+echo -e "  ${BOLD}./vendor/bin/sail artisan migrate${NC}  y si quieres  ${BOLD}./vendor/bin/sail artisan db:seed${NC}"
+echo ""
+echo -e "Solo ${BOLD}SQLite${NC} en local: ${BOLD}php artisan migrate${NC} y ${BOLD}php artisan db:seed${NC} cuando quieras."
+echo ""
+echo -e "Atajo Docker completo (sube stack + migrate + seed): ${BOLD}composer run docker-setup${NC}"
