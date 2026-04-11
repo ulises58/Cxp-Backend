@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api\V1;
 
 use App\Models\Group;
+use App\Models\Site;
 
 final class TenantGroupsApiTest extends ApiV1TestCase
 {
@@ -117,5 +118,90 @@ final class TenantGroupsApiTest extends ApiV1TestCase
         $this->actingAsTenant($ownerA)
             ->patchJson($this->v1('groups/'.$groupBId), ['name' => 'X'])
             ->assertNotFound();
+    }
+
+    public function test_create_group_rejects_duplicate_name_same_tenant(): void
+    {
+        $tenant = $this->createTenant();
+        $owner = $this->createTenantUser($tenant, 'owner');
+
+        $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), ['name' => 'Único', 'is_active' => true])
+            ->assertCreated();
+
+        $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), ['name' => 'Único', 'is_active' => true])
+            ->assertUnprocessable();
+    }
+
+    public function test_update_group_rejects_duplicate_name_from_peer_group(): void
+    {
+        $tenant = $this->createTenant();
+        $owner = $this->createTenantUser($tenant, 'owner');
+
+        $idA = $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), ['name' => 'Alpha', 'is_active' => true])
+            ->json('data.id');
+
+        $idB = $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), ['name' => 'Beta', 'is_active' => true])
+            ->json('data.id');
+
+        $this->actingAsTenant($owner)
+            ->patchJson($this->v1('groups/'.$idB), ['name' => 'Alpha'])
+            ->assertUnprocessable();
+
+        $this->actingAsTenant($owner)
+            ->patchJson($this->v1('groups/'.$idA), ['name' => 'Alpha renamed'])
+            ->assertOk();
+
+        $this->actingAsTenant($owner)
+            ->patchJson($this->v1('groups/'.$idB), ['name' => 'Alpha'])
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Alpha');
+    }
+
+    public function test_two_tenants_may_use_same_group_name(): void
+    {
+        $tenantA = $this->createTenant();
+        $tenantB = $this->createTenant();
+        $ownerA = $this->createTenantUser($tenantA, 'owner');
+        $ownerB = $this->createTenantUser($tenantB, 'owner');
+
+        $this->actingAsTenant($ownerA)
+            ->postJson($this->v1('groups'), ['name' => 'Regional', 'is_active' => true])
+            ->assertCreated();
+
+        $this->actingAsTenant($ownerB)
+            ->postJson($this->v1('groups'), ['name' => 'Regional', 'is_active' => true])
+            ->assertCreated();
+    }
+
+    public function test_delete_group_nullifies_site_group_id(): void
+    {
+        $tenant = $this->createTenant();
+        $owner = $this->createTenantUser($tenant, 'owner');
+
+        $groupId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('groups'), ['name' => 'To delete', 'is_active' => true])
+            ->json('data.id');
+
+        $siteId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites'), [
+                'name' => 'Linked',
+                'group_id' => (int) $groupId,
+                'is_active' => true,
+            ])
+            ->json('data.id');
+
+        $this->assertSame((int) $groupId, (int) Site::query()->find($siteId)?->group_id);
+
+        $this->actingAsTenant($owner)
+            ->deleteJson($this->v1('groups/'.$groupId))
+            ->assertNoContent();
+
+        $site = Site::query()->find($siteId);
+        $this->assertNotNull($site);
+        $this->assertNull($site->group_id);
     }
 }

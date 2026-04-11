@@ -228,4 +228,29 @@ final class TenantSitesAndLocationsApiTest extends ApiV1TestCase
             ])
             ->assertUnprocessable();
     }
+
+    public function test_owner_cannot_access_location_under_wrong_site(): void
+    {
+        $tenant = $this->createTenant();
+        $owner = $this->createTenantUser($tenant, 'owner');
+
+        $site1 = $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites'), ['name' => 'Site 1', 'is_active' => true])
+            ->json('data.id');
+
+        $site2 = $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites'), ['name' => 'Site 2', 'is_active' => true])
+            ->json('data.id');
+
+        $locId = $this->actingAsTenant($owner)
+            ->postJson($this->v1('sites/'.$site1.'/locations'), [
+                'name' => 'Only on site 1',
+                'is_active' => true,
+            ])
+            ->json('data.id');
+
+        $this->actingAsTenant($owner)
+            ->getJson($this->v1('sites/'.$site2.'/locations/'.$locId))
+            ->assertNotFound();
+    }
 }

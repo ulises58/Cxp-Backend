@@ -124,20 +124,25 @@ php artisan test
 ./vendor/bin/sail artisan test
 ```
 
-### Cobertura orientativa (`tests/Feature/Api/V1/`)
+Hay **tests de integración (Feature)** para los flujos principales y **tests unitarios** puntuales del dominio (p. ej. resolución del catálogo de permisos). La validación de **locations** (longitud, radio, timezone) y de **grupos** (nombre único por tenant, FK al borrar) está cubierta; las rutas tenant/landlord responden **401** sin token (`ApiV1GuestTenantRoutesTest`).
+
+### Cobertura (`tests/`)
 
 | Archivo | Qué cubre |
 |---------|-----------|
-| `AuthLoginTest` | Login, Sanctum, tenant inactivo |
-| `LandlordHealthTest`, `LandlordTenantApiTest`, `LandlordTenantUserApiTest` | Panel plataforma |
-| `TenantProfileApiTest` | Perfil tenant + middleware |
-| `TenantPermissionsCatalogTest` | Catálogo de permisos |
-| `TenantRolesApiTest` | CRUD roles tenant |
-| `TenantUsersApiTest` | Listado usuarios, sync roles |
-| `TenantGroupsApiTest` | CRUD grupos + aislamiento entre tenants |
-| `TenantSitesAndLocationsApiTest` | Sites/locations, `group_id`, geo, validación |
+| `Feature/Api/V1/AuthLoginTest` | Login, Sanctum, tenant inactivo |
+| `Feature/Api/V1/LandlordHealthTest`, `LandlordTenantApiTest`, `LandlordTenantUserApiTest` | Panel plataforma |
+| `Feature/Api/V1/TenantProfileApiTest` | Perfil tenant + middleware |
+| `Feature/Api/V1/TenantPermissionsCatalogTest` | Catálogo de permisos |
+| `Feature/Api/V1/TenantRolesApiTest` | CRUD roles tenant |
+| `Feature/Api/V1/TenantUsersApiTest` | Listado usuarios, sync roles |
+| `Feature/Api/V1/TenantGroupsApiTest` | CRUD grupos, aislamiento entre tenants, nombre duplicado (422), borrado → `sites.group_id` null |
+| `Feature/Api/V1/TenantSitesAndLocationsApiTest` | Sites/locations, `group_id`, geo básica, location bajo site incorrecto → 404 |
+| `Feature/Api/V1/TenantLocationValidationApiTest` | Reglas de validación geo/timezone + PATCH que limpia campos |
+| `Feature/Api/V1/ApiV1GuestTenantRoutesTest` | Invitado sin token en rutas tenant y landlord |
+| `Unit/Domain/TenantCatalogPermissionResolverTest` | `TenantCatalogPermissionResolver`: catálogo vs DB |
 
-Añade tests nuevos junto al mismo prefijo cuando incorpores endpoints v1.
+Añade tests nuevos en el mismo estilo cuando incorpores endpoints v1 o lógica de dominio crítica.
 
 ---
 
