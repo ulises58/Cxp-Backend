@@ -117,7 +117,7 @@ cd mi-saas
 
 En `laravel.build` el nombre va en la **ruta** (`/example-app`) porque el servidor genera el script al vuelo. En GitHub solo puedes servir un fichero estático, así que el nombre se pasa a **bash**: `bash -s example-app` (mismo efecto).
 
-Solo necesitas **Docker** en el host (Composer se ejecuta dentro de `laravelsail/php85-composer`, igual que `laravel.build`):
+Solo necesitas **Docker** en el host (Composer corre en **`laravelsail/php84-composer`**; la imagen `php85-composer` aún no está publicada en Docker Hub y provoca “pull access denied”):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/build/install.sh | bash -s example-app

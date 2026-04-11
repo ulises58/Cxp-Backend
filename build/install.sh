@@ -8,7 +8,8 @@
 #   CXP_REPO_URL       URL git (https o git@...), por defecto placeholder
 #   CXP_VERSION        p.ej. dev-main
 #   CXP_PACKAGIST=1    si ya publicaste cxp/cxp-backend en Packagist (no usa --repository)
-#   CXP_COMPOSER_IMAGE Imagen Composer (por defecto laravelsail/php85-composer:latest)
+#   CXP_COMPOSER_IMAGE  PHP+Composer (por defecto laravelsail/php84-composer:latest; php85-composer no está en Hub).
+#       Alternativa: export CXP_COMPOSER_IMAGE=composer:2
 #
 set -euo pipefail
 
@@ -31,7 +32,8 @@ docker info > /dev/null 2>&1 || {
 
 : "${CXP_REPO_URL:=https://github.com/ulises58/Cxp-Backend.git}"
 : "${CXP_VERSION:=dev-main}"
-COMPOSER_IMG="${CXP_COMPOSER_IMAGE:-laravelsail/php85-composer:latest}"
+# php85-composer puede fallar al hacer pull; php84-composer está publicada y cumple PHP ^8.3 del proyecto.
+COMPOSER_IMG="${CXP_COMPOSER_IMAGE:-laravelsail/php84-composer:latest}"
 
 run_create_project() {
   if [[ -n "${CXP_PACKAGIST:-}" ]]; then
