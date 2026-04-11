@@ -83,6 +83,9 @@ fix_perms() {
 echo ""
 fix_perms
 
+echo "→ quitando bin/ y build/ (solo sirven en la repo plantilla para el instalador)"
+rm -rf bin build
+
 echo ""
 echo -e "${CYAN}${BOLD}Proyecto creado.${NC} Las migraciones y el seed no se ejecutan solos."
 echo ""

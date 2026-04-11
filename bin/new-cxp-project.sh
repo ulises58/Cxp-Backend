@@ -40,6 +40,9 @@ composer create-project "cxp/cxp-backend:${CXP_VERSION}" "${NAME}" \
   --remove-vcs \
   --no-interaction
 
+echo "→ quitando bin/ y build/ (solo plantilla de instalador)"
+rm -rf "${NAME}/bin" "${NAME}/build"
+
 echo ""
 echo "Proyecto creado en ./${NAME}"
 echo "Sail (cuando quieras):"

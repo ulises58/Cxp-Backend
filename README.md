@@ -91,7 +91,7 @@ Para añadir un permiso nuevo al catálogo tenant:
 
 ## Crear un proyecto nuevo (igual que `composer create-project laravel/laravel`)
 
-Paquete Composer: **`cxp/cxp-backend`**. Tras `create-project`: `.env`, **`key:generate`**, fichero SQLite vacío, y se eliminan **`bin/`** y **`build/`** (solo sirven para publicar el instalador; en el proyecto nuevo no aportan). Sin migraciones ni seed automáticos.
+Paquete Composer: **`cxp/cxp-backend`**. Tras `create-project`: `.env`, **`key:generate`** y fichero SQLite vacío (sin migraciones ni seed automáticos). Los scripts **`build/install.sh`** y **`bin/new-cxp-project.sh`** borran **`bin/`** y **`build/`** al terminar (restos del instalador). Si instalas solo con `composer create-project`, puedes borrar una vez: `rm -rf bin build`.
 
 ### Si publicas el repo en GitHub (sin Packagist)
 
