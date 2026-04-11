@@ -99,7 +99,7 @@ Sustituye la URL por la de **tu** repositorio y la rama por defecto (`main` → 
 
 ```bash
 composer create-project cxp/cxp-backend:dev-main mi-saas \
-  --repository='{"type":"vcs","url":"https://github.com/TU-USUARIO/Cxp-Backend.git"}' \
+  --repository='{"type":"vcs","url":"https://github.com/ulises58/Cxp-Backend.git"}' \
   --remove-vcs
 cd mi-saas
 ```
@@ -120,7 +120,7 @@ En `laravel.build` el nombre va en la **ruta** (`/example-app`) porque el servid
 Solo necesitas **Docker** en el host (Composer se ejecuta dentro de `laravelsail/php85-composer`, igual que `laravel.build`):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/build/install.sh | bash -s example-app
+curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/build/install.sh | bash -s example-app
 ```
 
 Eso crea la carpeta `example-app`, ejecuta `composer create-project`, copia **`.env.sail.example`**, `sail pull` + `sail build`, **`sail up -d`**, `migrate` y `db:seed` en MySQL, y ajusta permisos. Al terminar el stack suele estar ya en marcha.
@@ -129,7 +129,7 @@ Variables opcionales (mismo patrón que Laravel con env):
 
 ```bash
 export CXP_REPO_URL='https://github.com/org/mi-fork.git'
-curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/build/install.sh | bash -s mi-saas
+curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/build/install.sh | bash -s mi-saas
 ```
 
 Si **`cxp/cxp-backend`** ya está en Packagist: `export CXP_PACKAGIST=1` antes del `curl`.
@@ -139,7 +139,7 @@ Si **`cxp/cxp-backend`** ya está en Packagist: `export CXP_PACKAGIST=1` antes d
 Requiere PHP + Composer instalados localmente:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/bin/new-cxp-project.sh | bash -s mi-saas
+curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/bin/new-cxp-project.sh | bash -s mi-saas
 ```
 
 ### Arrancar el código generado
@@ -152,7 +152,7 @@ curl -fsSL https://raw.githubusercontent.com/TU-USUARIO/Cxp-Backend/main/bin/new
 Si vas a **desarrollar** la base, clónala y usa `composer install` aquí; el flujo `create-project` es para **generar copias** nuevas del proyecto.
 
 ```bash
-git clone https://github.com/TU-USUARIO/Cxp-Backend.git && cd Cxp-Backend
+git clone https://github.com/ulises58/Cxp-Backend.git && cd Cxp-Backend
 composer install
 ```
 

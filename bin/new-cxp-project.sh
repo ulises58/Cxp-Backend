@@ -8,7 +8,7 @@
 #   build/install.sh
 #
 # Uso con curl (Composer en el host):
-#   curl -fsSL https://raw.githubusercontent.com/USUARIO/REPO/main/bin/new-cxp-project.sh | bash -s mi-saas
+#   curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/bin/new-cxp-project.sh | bash -s mi-saas
 #
 # Variables opcionales:
 #   CXP_REPO_URL   URL git del paquete (https o git@...)
@@ -31,7 +31,7 @@ fi
 # Sin Packagist: instala desde el repositorio Git (ajusta a tu fork o monorepo).
 # Cuando publiques en Packagist, puedes omitir --repository y usar solo:
 #   composer create-project cxp/cxp-backend mi-saas
-: "${CXP_REPO_URL:=https://github.com/TU-USUARIO/Cxp-Backend.git}"
+: "${CXP_REPO_URL:=https://github.com/ulises58/Cxp-Backend.git}"
 : "${CXP_VERSION:=dev-main}"
 
 echo "→ composer create-project cxp/cxp-backend:${CXP_VERSION} ${NAME}"

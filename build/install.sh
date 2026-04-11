@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Instalador estilo https://laravel.build/nombre-app — solo necesitas Docker (Composer va dentro del contenedor).
 #
-# Uso (sustituye ORG/REPO por tu GitHub cuando publiques el repo):
-#   curl -fsSL https://raw.githubusercontent.com/ORG/REPO/main/build/install.sh | bash -s example-app
+# Uso:
+#   curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/build/install.sh | bash -s example-app
 #
 # Variables opcionales (antes del curl o en la misma línea):
 #   CXP_REPO_URL       URL git (https o git@...), por defecto placeholder
@@ -29,7 +29,7 @@ docker info > /dev/null 2>&1 || {
   exit 1
 }
 
-: "${CXP_REPO_URL:=https://github.com/TU-USUARIO/Cxp-Backend.git}"
+: "${CXP_REPO_URL:=https://github.com/ulises58/Cxp-Backend.git}"
 : "${CXP_VERSION:=dev-main}"
 COMPOSER_IMG="${CXP_COMPOSER_IMAGE:-laravelsail/php85-composer:latest}"
 
