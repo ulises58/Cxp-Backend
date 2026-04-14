@@ -146,8 +146,7 @@ curl -fsSL https://raw.githubusercontent.com/ulises58/Cxp-Backend/main/bin/new-c
 
 1. Entra en el proyecto: `cd mi-saas`
 2. **Sail:** `cp .env.sail.example .env`, `php artisan key:generate`, `./vendor/bin/sail up -d`, luego `./vendor/bin/sail artisan migrate` (y `db:seed` si quieres).
-3. **Atajo** que sí levanta Docker + migrate + seed: **`composer run docker-setup`** (o `bash scripts/setup-docker.sh`).
-4. **Solo SQLite / `php artisan serve`:** `php artisan migrate` y `php artisan db:seed` cuando toque.
+3. **Solo SQLite / `php artisan serve`:** `php artisan migrate` y `php artisan db:seed` cuando toque.
 
 ### Trabajar en el propio template (este repositorio)
 
@@ -174,7 +173,7 @@ composer create-project cxp/cxp-backend:dev-main /tmp/prueba-cxp \
 
 Requisitos en el host: **Docker** (Compose v2), **PHP 8.3+** y **Composer** para el primer `composer install` / `key:generate` antes de levantar contenedores.
 
-- **`composer run docker-setup`** o **`bash scripts/setup-docker.sh`**: `build`, `up -d`, migraciones y seed con Sail (usa **`.env.sail.example`** si no existe `.env`).
+- Configura **`.env`** desde **`.env.sail.example`**, luego `./vendor/bin/sail build` (si aplica), `./vendor/bin/sail up -d`, `./vendor/bin/sail artisan migrate` (y `db:seed` si quieres).
 - Parar: `./vendor/bin/sail down`.
 
 El stack incluye PHP (runtime Sail), MySQL 8.4, Redis, Mailpit, Meilisearch y Selenium (`depends_on` como en el stub de Sail).
